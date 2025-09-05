@@ -25,10 +25,11 @@
     "drizzle-kit": "^0.30.2"
   },
   "dependencies": {
+    "@civic/auth": "^0.9.5",
     "@hono/swagger-ui": "^0.4.1",
     "@hono/zod-openapi": "^0.18.0",
     "@hono/zod-validator": "^0.4.1",
-    "dotenv": "^16.4.7",
+    "dotenv": "^17.2.2",
     "drizzle-orm": "^0.38.4",
     "hono": "^4.6.11",
     "lib": "workspace:lib",
