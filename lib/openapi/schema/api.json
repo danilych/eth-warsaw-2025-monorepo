@@ -1,0 +1,61 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "API Documentation"
+  },
+  "security": [
+    {
+      "userJwtAuth": [],
+      "adminJwtAuth": [],
+      "operatorJwtAuth": []
+    }
+  ],
+  "components": {
+    "schemas": {},
+    "parameters": {}
+  },
+  "paths": {
+    "/test/hello-world": {
+      "post": {
+        "tags": [
+          "Test"
+        ],
+        "security": [
+          {
+            "tmaJwtAuth": [],
+            "tmaSessionId": [],
+            "tmaUserTelegramId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

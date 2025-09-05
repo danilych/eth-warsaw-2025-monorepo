@@ -1,0 +1,32 @@
+{
+  "name": "letdate",
+  "module": "src/main.ts",
+  "type": "module",
+  "scripts": {
+    "lint": "bun x @biomejs/biome check {apps,lib}",
+    "lint:fix": "bun x @biomejs/biome check --write {apps,lib}",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
+    "generate:openapi": "bun run --env-file .env lib/openapi/generate.mjs",
+    "generate:openapi:watch": "bun run --env-file .env --watch lib/openapi/generate.mjs",
+    "clean": "find . -type d -name node_modules -o -name .wrangler -o -name dist | xargs rm -rf",
+    "dev:all": "bun run --filter \"./apps/*\" dev"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/bun": "latest",
+    "openapi-typescript": "^7.8.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "lib"
+  ],
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "google-auth-library": "^9.15.1"
+  }
+}

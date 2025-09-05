@@ -1,0 +1,21 @@
+{
+  "name": "lib",
+  "module": "index.ts",
+  "type": "module",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "lint": "bun x @biomejs/biome check",
+    "lint:fix": "bun x @biomejs/biome check --write",
+    "format": "bun x @biomejs/biome format --write src",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

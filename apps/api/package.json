@@ -1,0 +1,38 @@
+{
+  "name": "api",
+  "module": "src/main.ts",
+  "type": "module",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "lint": "bun x @biomejs/biome check",
+    "lint:fix": "bun x @biomejs/biome check --write",
+    "start": "bun run src/main.ts",
+    "dev": "bun --hot run src/main.ts",
+    "db:generate": "bun drizzle-kit generate --config=drizzle.config.main.ts --name",
+    "db:migrate": "bun drizzle-kit migrate --config=drizzle.config.main.ts",
+    "db:drop": "bun drizzle-kit drop --config=drizzle.config.main.ts",
+    "db:studio": "bun drizzle-kit studio --config=drizzle.config.main.ts",
+    "format": "bun x @biomejs/biome format --write src",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage"
+  },
+  "devDependencies": {
+    "@types/uuid": "^10.0.0",
+    "bun-types": "^1.1.43",
+    "dotenv-cli": "^8.0.0",
+    "drizzle-kit": "^0.30.2"
+  },
+  "dependencies": {
+    "@hono/swagger-ui": "^0.4.1",
+    "@hono/zod-openapi": "^0.18.0",
+    "@hono/zod-validator": "^0.4.1",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.38.4",
+    "hono": "^4.6.11",
+    "lib": "workspace:lib",
+    "pg": "^8.13.3",
+    "uuid": "^11.0.3"
+  }
+}
