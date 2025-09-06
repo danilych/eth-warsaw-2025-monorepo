@@ -144,6 +144,8 @@ authRouter.openapi(
       const { id, walletAddress } = c.req.valid('query');
       const user = await c.get('civicAuth').getUser();
 
+      console.log(user, id)
+
       if (!user || user.id !== id) {
         throw new NotFoundException('User not found');
       }
@@ -155,7 +157,6 @@ authRouter.openapi(
         data: user,
       });
     } catch (err) {
-      console.log(err);
       return c.json({ success: false, message: 'Failed to get user' }, 400);
     }
   }
