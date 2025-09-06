@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { CivicAuth } from '@civic/auth/vanillajs';
+import { CivicAuth, User as BaseUser } from '@civic/auth/vanillajs';
 import { AuthService } from '../services/auth.service';
 import type { User } from '../types/api';
 
@@ -21,7 +21,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<CivicAuth | null>(null);
+  const [user, setUser] = useState<BaseUser | undefined>(undefined);
   const [dbUser, setDbUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [authClient, setAuthClient] = useState<CivicAuth | null>(null);
@@ -49,6 +49,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoading(true);
       const { user: civicUser } = await authClient.startAuthentication();
       setUser(civicUser);
+
+      window.location.href = '/quests';
     } catch (error) {
       console.error('Sign in failed:', error);
     } finally {
@@ -59,7 +61,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signOut = async () => {
     try {
       await AuthService.logout();
-      setUser(null);
+      setUser(undefined);
       setDbUser(null);
     } catch (error) {
       console.error('Sign out failed:', error);
