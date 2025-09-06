@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import crypto from 'node:crypto';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import path from "node:path";
 
 if (!('hash' in crypto)) {
   crypto.hash = (algorithm, data, outputEncoding) => {
@@ -9,14 +9,20 @@ if (!('hash' in crypto)) {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(() => ({
   server: {
     host: '0.0.0.0',
     port: 3000,
   },
+  plugins: [react()],
   preview: {
     host: '0.0.0.0',
     port: 3000,
   },
-});
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+}));
+
