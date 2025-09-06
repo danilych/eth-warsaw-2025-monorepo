@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { CivicAuthProvider, useUser } from '@civic/auth-web3/react';
+import { CivicAuth } from '@civic/auth/vanillajs';
 import { AuthService } from '../services/auth.service';
 import type { User } from '../types/api';
 
@@ -10,65 +10,75 @@ interface AuthContextType {
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   setDbUser: (user: User | null) => void;
+  setUser: (user: any | null) => void;
+  setIsLoading: (loading: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: React.ReactNode;
-  clientId: string;
 }
 
-function AuthProviderInner({ children }: { children: React.ReactNode }) {
-  const { user, signIn, signOut, isLoading } = useUser();
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<any | null>(null);
   const [dbUser, setDbUser] = useState<User | null>(null);
-  const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [authClient, setAuthClient] = useState<any>(null);
 
-  // Auto-check if user has wallet and create user record when authenticated
+  // Initialize Civic Auth client
   useEffect(() => {
-    if (user && !dbUser && !isCreatingUser) {
-      // Check if user already has a wallet
-      if ('ethereum' in user && user.ethereum) {
-        const walletAddress = (user.ethereum as { address: string }).address;
-        if (walletAddress) {
-          setIsCreatingUser(true);
-          AuthService.createUser(user.id, walletAddress)
-            .then((createdUser) => {
-              setDbUser(createdUser);
-            })
-            .catch((error) => {
-              console.error('Failed to create user with wallet:', error);
-            })
-            .finally(() => {
-              setIsCreatingUser(false);
-            });
-        }
+    const initAuth = async () => {
+      try {
+        const client = await CivicAuth.create({
+          loginUrl: `https://eth-warsaw-2025-monorepo-production.up.railway.app/auth/auth/`,
+          logging: { enabled: true },
+        });
+        setAuthClient(client);
+      } catch (error) {
+        console.error('Failed to initialize Civic Auth:', error);
       }
-    }
-  }, [user, dbUser, isCreatingUser]);
+    };
 
-  const value: AuthContextType = {
+    initAuth();
+  }, []);
+
+  const signIn = async () => {
+    if (!authClient) return;
+
+    try {
+      setIsLoading(true);
+      const { user: civicUser } = await authClient.startAuthentication();
+      setUser(civicUser);
+    } catch (error) {
+      console.error('Sign in failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      await AuthService.logout();
+      setUser(null);
+      setDbUser(null);
+    } catch (error) {
+      console.error('Sign out failed:', error);
+    }
+  };
+
+  const value = {
     user,
     dbUser,
-    isLoading: isLoading || isCreatingUser,
+    isLoading,
     signIn,
     signOut,
     setDbUser,
+    setUser,
+    setIsLoading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function AuthProvider({ children, clientId }: AuthProviderProps) {
-  return (
-    <CivicAuthProvider
-      clientId={clientId}
-      redirectUrl="https://eth-warsaw-2025-monorepo-production.up.railway.app/auth/auth/callback"
-      displayMode="redirect"
-    >
-      <AuthProviderInner>{children}</AuthProviderInner>
-    </CivicAuthProvider>
-  );
 }
 
 export function useAuth() {

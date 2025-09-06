@@ -1,14 +1,18 @@
 import { apiClient } from './api';
-import type { User, CivicUser } from '../types/api';
+import type { User } from '../types/api';
 
 export const AuthService = {
   /**
-   * Redirect to Civic Auth login
+   * Get login URL from backend
    */
-  async login(): Promise<void> {
-    window.location.href = `${
-      process.env.VITE_API_BASE_URL || 'http://localhost:3000'
-    }/auth/auth`;
+  async getLoginUrl(): Promise<string> {
+    const response = await apiClient.get<{ loginUrl: string }>('/auth/auth/login-url');
+    
+    if (!response.success || !response.data) {
+      throw new Error('Failed to get login URL');
+    }
+    
+    return response.data.loginUrl;
   },
 
   /**
@@ -42,12 +46,18 @@ export const AuthService = {
   },
 
   /**
-   * Get current authenticated user
+   * Get current authenticated user from session
    */
-  async getCurrentUser(): Promise<CivicUser | null> {
+  async getCurrentUser(): Promise<any | null> {
     try {
-      // This would be handled by Civic Auth context
-      // For now, return null - will be implemented with Civic provider
+      // This will be handled by checking session cookies
+      // The backend will validate the session and return user info
+      const response = await apiClient.get('/auth/auth/user');
+      
+      if (response.success && response.data) {
+        return response.data;
+      }
+      
       return null;
     } catch (error) {
       console.error('Get current user error:', error);
