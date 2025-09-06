@@ -11,7 +11,11 @@
     "generate:openapi": "bun run --env-file .env lib/openapi/generate.mjs",
     "generate:openapi:watch": "bun run --env-file .env --watch lib/openapi/generate.mjs",
     "clean": "find . -type d -name node_modules -o -name .wrangler -o -name dist | xargs rm -rf",
-    "dev:all": "bun run --filter \"./apps/*\" dev"
+    "dev:all": "bun run --filter \"./apps/*\" dev",
+    "db:generate": "bun run --filter \"./apps/api\" db:generate",
+    "db:migrate": "bun run --filter \"./apps/api\" db:migrate",
+    "db:drop": "bun run --filter \"./apps/api\" db:drop",
+    "db:studio": "bun run --filter \"./apps/api\" db:studio"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
