@@ -11,7 +11,9 @@
     "generate:openapi": "bun run --env-file .env lib/openapi/generate.mjs",
     "generate:openapi:watch": "bun run --env-file .env --watch lib/openapi/generate.mjs",
     "clean": "find . -type d -name node_modules -o -name .wrangler -o -name dist | xargs rm -rf",
-    "dev:all": "bun run --filter \"./apps/*\" dev"
+    "dev:all": "bun run --filter \"./apps/*\" dev",
+    "start:api": "bun run --filter \"./apps/api\" start",
+    "start:app": "bun run --filter \"./apps/app\" preview"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
