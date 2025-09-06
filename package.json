@@ -2,6 +2,7 @@
   "name": "letdate",
   "module": "src/main.ts",
   "type": "module",
+  "license": "GPL-3.0-or-later",
   "scripts": {
     "lint": "bun x @biomejs/biome check {apps,lib}",
     "lint:fix": "bun x @biomejs/biome check --write {apps,lib}",
@@ -12,6 +13,10 @@
     "generate:openapi:watch": "bun run --env-file .env --watch lib/openapi/generate.mjs",
     "clean": "find . -type d -name node_modules -o -name .wrangler -o -name dist | xargs rm -rf",
     "dev:all": "bun run --filter \"./apps/*\" dev",
+    "db:generate": "bun run --filter \"./apps/api\" db:generate",
+    "db:migrate": "bun run --filter \"./apps/api\" db:migrate",
+    "db:drop": "bun run --filter \"./apps/api\" db:drop",
+    "db:studio": "bun run --filter \"./apps/api\" db:studio",
     "start:api": "bun run --filter \"./apps/api\" start",
     "start:app": "bun run --filter \"./apps/app\" preview"
   },
