@@ -8,6 +8,13 @@
       "when": 1751540766683,
       "tag": "0000_add_uuid_extension",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1757120186623,
+      "tag": "0001_--name=init",
+      "breakpoints": true
     }
   ]
 }
