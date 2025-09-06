@@ -13,11 +13,13 @@ export default defineConfig(() => ({
   server: {
     host: '0.0.0.0',
     port: 3000,
+    allowedHosts: ['28546b252a03.ngrok-free.app'],
   },
   plugins: [react()],
   preview: {
     host: '0.0.0.0',
     port: 3000,
+    allowedHosts: ['28546b252a03.ngrok-free.app'],
   },
   resolve: {
     alias: {
