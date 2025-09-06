@@ -12,6 +12,7 @@ import {
   QuestWithUserStatusSchema,
 } from './schema/quest.schema';
 import { NotFoundException } from 'lib/exceptions/http';
+import { QuestService } from '../../services/blockchain/quest.service';
 
 const openApiTags = ['Quest'];
 export const questRouter = new OpenAPIHono();
@@ -136,8 +137,19 @@ questRouter.openapi(
           imageUrl: body.imageUrl || null,
           questType: body.questType,
           target: body.target,
+          reward: body.reward,
+          tokenAddress: body.tokenAddress,
+          expiry: body.expiry,
         })
         .returning();
+
+      await QuestService.createQuest({
+        id: newQuest.id,
+        reward: body.reward.toString(),
+        rewardToken: body.tokenAddress,
+        expiry: body.expiry.toString(),
+        createdAt: new Date().toISOString(),
+      });
 
       return c.json(
         {
@@ -214,12 +226,11 @@ questRouter.openapi(
         throw NotFoundException;
       }
 
+      const updateData = { ...body, updatedAt: new Date() };
+
       const [updatedQuest] = await db
         .update(quests)
-        .set({
-          ...body,
-          updatedAt: new Date(),
-        })
+        .set(updateData)
         .where(eq(quests.id, id))
         .returning();
 
@@ -285,6 +296,8 @@ questRouter.openapi(
           updatedAt: new Date(),
         })
         .where(eq(quests.id, id));
+
+      await QuestService.removeQuest(id);
 
       return c.json({
         success: true,

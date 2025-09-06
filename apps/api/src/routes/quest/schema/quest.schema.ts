@@ -11,6 +11,9 @@ export const QuestSchema = z.object({
   imageUrl: z.string().nullable(),
   questType: QuestTypeSchema,
   target: z.string(),
+  reward: z.bigint(),
+  tokenAddress: z.string(),
+  expiry: z.number(),
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
   deletedAt: z.string().nullable(),
@@ -35,6 +38,9 @@ export const QuestWithUserStatusSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
   deletedAt: z.string().nullable(),
+  reward: z.number(),
+  tokenAddress: z.string(),
+  expiry: z.number(),
   userStatus: z
     .object({
       id: z.string().uuid(),
@@ -69,6 +75,13 @@ export const CreateQuestSchema = z.object({
     .min(1, 'Target is required')
     .max(200, 'Target must be less than 200 characters')
     .trim(),
+  reward: z.string().transform((val) => {
+    const ethAmount = Number.parseFloat(val);
+    const weiAmount = ethAmount * (10 ** 18);
+    return BigInt(Math.floor(weiAmount));
+  }),
+  tokenAddress: z.string().min(1, 'Token address is required'),
+  expiry: z.number().int().min(0, 'Expiry must be a non-negative integer'),
 });
 
 export const UpdateQuestSchema = z
@@ -97,6 +110,17 @@ export const UpdateQuestSchema = z
       .min(1, 'Target is required')
       .max(200, 'Target must be less than 200 characters')
       .trim()
+      .optional(),
+    reward: z.string().transform((val) => {
+      const ethAmount = Number.parseFloat(val);
+      const weiAmount = ethAmount * (10 ** 18);
+      return BigInt(Math.floor(weiAmount));
+    }).optional(),
+    tokenAddress: z.string().optional(),
+    expiry: z
+      .number()
+      .int()
+      .min(0, 'Expiry must be a non-negative integer')
       .optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {

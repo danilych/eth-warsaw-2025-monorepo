@@ -15,6 +15,13 @@
       "when": 1757158452706,
       "tag": "0001_add_quests_and_events_parsing",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1757165001546,
+      "tag": "0002_update-quest-scheme",
+      "breakpoints": true
     }
   ]
 }
