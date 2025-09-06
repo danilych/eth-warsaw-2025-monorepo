@@ -12,4 +12,10 @@ export const CONFIG = {
       START_BLOCK: 0,
     },
   },
+
+  GOLEM: {
+    CHAIN_ID: 60138453033,
+    RPC_URL: 'https://ethwarsaw.holesky.golemdb.io/rpc',
+    WS_URL: 'wss://ethwarsaw.holesky.golemdb.io/rpc/ws',
+  },
 } as const;
