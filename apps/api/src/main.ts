@@ -22,7 +22,7 @@ app.use('*', async (c, next) => {
   return next();
 });
 
-app.use('*', cors());
+app.use('*', cors({ origin: '*' }));
 
 // Exceptions
 app.notFound((c) => c.json({ success: false, message: 'No Such Route' }, 404));
