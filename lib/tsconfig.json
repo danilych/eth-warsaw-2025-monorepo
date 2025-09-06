@@ -19,6 +19,6 @@
     "strict": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["bun-types", "@cloudflare/workers-types"]
+    "types": ["bun-types"]
   }
 }
