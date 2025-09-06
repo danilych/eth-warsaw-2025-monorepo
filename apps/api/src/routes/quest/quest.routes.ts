@@ -214,7 +214,7 @@ questRouter.openapi(
         throw NotFoundException;
       }
 
-      const updatedQuest = await db
+      const [updatedQuest] = await db
         .update(quests)
         .set({
           ...body,
@@ -268,13 +268,13 @@ questRouter.openapi(
     const { id } = c.req.valid('param');
 
     try {
-      const existingQuest = await db
+      const [existingQuest] = await db
         .select()
         .from(quests)
         .where(and(eq(quests.id, id), isNull(quests.deletedAt)))
         .limit(1);
 
-      if (existingQuest.length === 0) {
+      if (!existingQuest) {
         throw NotFoundException;
       }
 
@@ -329,7 +329,7 @@ questRouter.openapi(
   async (c) => {
     const { userId, questId } = c.req.valid('param');
 
-    const userQuest = await db
+    const [userQuest] = await db
       .select()
       .from(userQuests)
       .where(
@@ -341,13 +341,13 @@ questRouter.openapi(
       )
       .limit(1);
 
-    if (userQuest.length === 0) {
+    if (!userQuest) {
       throw NotFoundException;
     }
 
     return c.json({
       success: true,
-      data: userQuest[0],
+      data: userQuest,
     });
   }
 );
