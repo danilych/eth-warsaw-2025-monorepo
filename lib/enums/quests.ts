@@ -1,7 +1,8 @@
 export enum EQuestTypes {
-  SEND = 'send',
-  RECEIVE = 'receive',
-  NFT = 'nft',
+  SEND_ERC20 = 'SEND_ERC20',
+  RECEIVE_ERC20 = 'RECEIVE_ERC20',
+  SEND_NFT = 'SEND_NFT',
+  RECEIVE_NFT = 'RECEIVE_NFT',
 }
 
 export enum EQuestStatuses {
