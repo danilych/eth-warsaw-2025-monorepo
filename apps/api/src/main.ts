@@ -22,7 +22,15 @@ app.use('*', async (c, next) => {
   return next();
 });
 
-app.use('*', cors({ origin: '*' }));
+app.use(
+  '*',
+  cors({
+    origin: [
+      'http://localhost:3000',
+      'https://eth-warsaw-2025-monorepo-production.up.railway.app',
+    ],
+  })
+);
 
 // Exceptions
 app.notFound((c) => c.json({ success: false, message: 'No Such Route' }, 404));
