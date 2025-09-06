@@ -29,6 +29,13 @@
       "when": 1757174563655,
       "tag": "0003_update-user-table",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1757189261606,
+      "tag": "0004_add_user_balances_and_claims",
+      "breakpoints": true
     }
   ]
 }
