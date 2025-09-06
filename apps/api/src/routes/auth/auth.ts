@@ -154,7 +154,8 @@ authRouter.openapi(
         success: true,
         data: user,
       });
-    } catch {
+    } catch (err) {
+      console.log(err);
       return c.json({ success: false, message: 'Failed to get user' }, 400);
     }
   }
