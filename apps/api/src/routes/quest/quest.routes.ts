@@ -355,9 +355,8 @@ questRouter.openapi(
         description: quests.description,
         imageUrl: quests.imageUrl,
         questType: quests.questType,
-        target: quests.target,
-        reward: quests.reward,
-        tokenAddress: quests.tokenAddress,
+        rewardAmount: quests.rewardAmount,
+        rewardTokenAddress: quests.rewardTokenAddress,
         expiry: quests.expiry,
         createdAt: quests.createdAt,
         updatedAt: quests.updatedAt,
@@ -442,6 +441,7 @@ questRouter.openapi(
       request: {
         params: z.object({
           questId: z.string().uuid('Invalid quest ID format'),
+          walletAddress: z.string().min(42).max(42),
         }),
       },
       responses: {
@@ -481,17 +481,12 @@ questRouter.openapi(
     try {
       const { questId } = c.req.valid('param');
 
-      // Get authenticated user data from JWT token
-      const user = await c.get('civicAuth').getUser();
+      const baseUser = await c.get('civicAuth').getUser();
 
-      if (!user || !user.walletAddress) {
-        return c.json(
-          { success: false, message: 'User wallet address not found' },
-          400
-        );
+      if (!baseUser?.id) {
+        return c.json({ success: false, message: 'User not found' }, 400);
       }
 
-      // Verify quest exists
       const [quest] = await db
         .select()
         .from(quests)
@@ -502,10 +497,9 @@ questRouter.openapi(
         throw NotFoundException;
       }
 
-      // Generate EIP-712 signature
       const signature = await SignatureService.generateEIP712Signature(
         questId,
-        user.walletAddress
+        c.req.valid('param').walletAddress
       );
 
       return c.json({
@@ -513,7 +507,7 @@ questRouter.openapi(
         data: {
           signature,
           questId,
-          userAddress: user.walletAddress,
+          userAddress: c.req.valid('param').walletAddress,
         },
       });
     } catch (error) {

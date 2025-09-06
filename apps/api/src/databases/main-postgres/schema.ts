@@ -41,6 +41,7 @@ export const questStatusEnum = pgEnumTyped(
 
 export const users = pgTable('users', {
   ...commonColumns,
+  civicId: text('civic_id').notNull().unique(),
   walletAddress: text('wallet_address').notNull().unique(),
 });
 
