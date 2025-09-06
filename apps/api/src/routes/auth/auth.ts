@@ -1,12 +1,12 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
-import {
-  openapiSuccessResponse,
-  withSerializer,
-  openapiBody,
-} from 'lib/utils/openapi';
+import { openapiSuccessResponse, withSerializer } from 'lib/utils/openapi';
 import { z } from 'zod';
-import { type HandleCallbackRequest } from '@civic/auth/server';
+import type { HandleCallbackRequest } from '@civic/auth/server';
 import type { Env } from '../../env';
+import { NotFoundException } from 'lib/exceptions/http';
+import { db } from '../../databases/main-postgres';
+import { users } from '../../databases/main-postgres/schema';
+import { eq } from 'drizzle-orm';
 
 const openApiTags = ['Auth'];
 export const authRouter = new OpenAPIHono<Env>();
@@ -83,7 +83,7 @@ authRouter.openapi(
       }
 
       return c.json({ error: 'Internal server error' }, 500);
-    } catch (error) {
+    } catch {
       return c.redirect('/?error=auth_failed');
     }
   }
@@ -116,6 +116,50 @@ authRouter.openapi(
       console.error('Logout error:', error);
       await c.get('civicAuth').clearTokens();
       return c.redirect('/');
+    }
+  }
+);
+
+authRouter.openapi(
+  withSerializer(
+    createRoute({
+      method: 'post',
+      path: '/auth/user',
+      tags: openApiTags,
+      security: [{ tmaJwtAuth: [], tmaSessionId: [], tmaUserTelegramId: [] }],
+      request: {
+        query: z.object({
+          id: z.string(),
+          walletAddress: z.string(),
+        }),
+      },
+      responses: {
+        200: openapiSuccessResponse({
+          schema: z.string(),
+        }),
+      },
+    })
+  ),
+  async (c) => {
+    try {
+      const { id, walletAddress } = c.req.valid('query');
+      const user = await c.get('civicAuth').getUser();
+
+      if (!user || user.id !== id) {
+        throw new NotFoundException('User not found');
+      }
+
+      await db
+        .update(users)
+        .set({ walletAddress, civicId: id })
+        .where(eq(users.id, id));
+
+      return c.json({
+        success: true,
+        data: user,
+      });
+    } catch {
+      return c.json({ success: false, message: 'Failed to get user' }, 400);
     }
   }
 );

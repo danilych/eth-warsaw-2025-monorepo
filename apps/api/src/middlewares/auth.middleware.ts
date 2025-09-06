@@ -1,8 +1,9 @@
-import type { Context } from 'hono';
+import { createMiddleware } from 'hono/factory';
 
-// biome-ignore lint/complexity/noBannedTypes: <explanation>
-export const authMiddleware = async (c: Context, next: Function) => {
-  if (!(await c.get('civicAuth').isLoggedIn()))
-    return c.text('Unauthorized', 401);
-  return next();
+export const authMiddleware = () => {
+  return createMiddleware(async (c, next) => {
+    if (!(await c.get('civicAuth').isLoggedIn()))
+      return c.text('Unauthorized', 401);
+    return next();
+  });
 };
