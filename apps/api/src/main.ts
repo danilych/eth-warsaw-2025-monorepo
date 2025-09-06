@@ -10,6 +10,7 @@ import { HonoCookieStorage } from './services/cookies.service';
 import { CivicAuth } from '@civic/auth/server';
 import { civicConfig } from './constants/civic';
 import type { Env } from './env';
+import { cors } from 'hono/cors';
 
 // Init
 export const app = new OpenAPIHono<Env>();
@@ -20,6 +21,8 @@ app.use('*', async (c, next) => {
   c.set('civicAuth', new CivicAuth(storage, civicConfig()));
   return next();
 });
+
+app.use('*', cors());
 
 // Exceptions
 app.notFound((c) => c.json({ success: false, message: 'No Such Route' }, 404));
