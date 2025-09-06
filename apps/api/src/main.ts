@@ -25,10 +25,7 @@ app.use('*', async (c, next) => {
 app.use(
   '*',
   cors({
-    origin: [
-      'http://localhost:3000',
-      'https://eth-warsaw-2025-monorepo-production.up.railway.app',
-    ],
+    origin: 'true',
   })
 );
 
