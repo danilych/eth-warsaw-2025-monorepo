@@ -19,7 +19,7 @@ export interface Quest {
   imageUrl: string | null;
   questType: QuestType;
   target: string;
-  reward: string; // Changed from bigint to string to match OpenAPI schema
+  reward: bigint;
   tokenAddress: string;
   expiry: number;
   fromAddress: string | null;
