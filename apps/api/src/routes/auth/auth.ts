@@ -6,7 +6,6 @@ import type { Env } from '../../env';
 import { NotFoundException } from 'lib/exceptions/http';
 import { db } from '../../databases/main-postgres';
 import { users } from '../../databases/main-postgres/schema';
-import { eq } from 'drizzle-orm';
 
 const openApiTags = ['Auth'];
 export const authRouter = new OpenAPIHono<Env>();
@@ -149,10 +148,7 @@ authRouter.openapi(
         throw new NotFoundException('User not found');
       }
 
-      await db
-        .update(users)
-        .set({ walletAddress, civicId: id })
-        .where(eq(users.id, id));
+      await db.insert(users).values({ walletAddress, civicId: id });
 
       return c.json({
         success: true,
