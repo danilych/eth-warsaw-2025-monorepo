@@ -75,19 +75,27 @@ export const CreateQuestSchema = z.object({
     .optional()
     .or(z.literal('')),
   questType: QuestTypeSchema,
+  rewardTokenAddress: z
+    .string()
+    .min(1, 'Reward token address is required')
+    .max(42, 'Reward token address must be less than 42 characters')
+    .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address'),
   fromAddress: z
     .string()
-    .min(1, 'Target is required')
-    .max(200, 'Target must be less than 200 characters')
+    .min(1, 'From address is required')
+    .max(42, 'From address must be less than 42 characters')
+    .trim(),
+  toAddress: z
+    .string()
+    .min(1, 'To address is required')
+    .max(42, 'To address must be less than 42 characters')
     .trim(),
   reward: z.string().transform((val) => {
     const ethAmount = Number.parseFloat(val);
-    const weiAmount = ethAmount * (10 ** 18);
+    const weiAmount = ethAmount * 10 ** 18;
     return BigInt(Math.floor(weiAmount));
   }),
-  expiry: z.number().int().min(0, 'Expiry must be a non-negative integer')
-    .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
-    .optional(),
+  expiry: z.number().int().min(0, 'Expiry must be a non-negative integer'),
   amount: z
     .string()
     .regex(/^\d+(\.\d+)?$/, 'Must be a valid number')
@@ -127,6 +135,10 @@ export const UpdateQuestSchema = z
       .string()
       .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
       .optional(),
+    toAddress: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
+      .optional(),
     amount: z
       .string()
       .regex(/^\d+(\.\d+)?$/, 'Must be a valid number')
@@ -139,11 +151,18 @@ export const UpdateQuestSchema = z
       .string()
       .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
       .optional(),
-    reward: z.string().transform((val) => {
-      const ethAmount = Number.parseFloat(val);
-      const weiAmount = ethAmount * (10 ** 18);
-      return BigInt(Math.floor(weiAmount));
-    }).optional(),
+    reward: z
+      .string()
+      .transform((val) => {
+        const ethAmount = Number.parseFloat(val);
+        const weiAmount = ethAmount * 10 ** 18;
+        return BigInt(Math.floor(weiAmount));
+      })
+      .optional(),
+    rewardTokenAddress: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
+      .optional(),
     expiry: z
       .number()
       .int()

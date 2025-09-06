@@ -136,11 +136,11 @@ questRouter.openapi(
           description: body.description,
           imageUrl: body.imageUrl || null,
           questType: body.questType,
-          target: body.target,
-          reward: body.reward,
-          tokenAddress: body.tokenAddress,
+          rewardAmount: body.reward,
+          rewardTokenAddress: body.rewardTokenAddress,
           expiry: body.expiry,
           fromAddress: body.fromAddress || null,
+          toAddress: body.toAddress || null,
           amount: body.amount || null,
           tokenAddress: body.tokenAddress || null,
           nftAddress: body.nftAddress || null,
@@ -150,7 +150,7 @@ questRouter.openapi(
       await QuestService.createQuest({
         id: newQuest.id,
         reward: body.reward.toString(),
-        rewardToken: body.tokenAddress,
+        rewardToken: body.rewardTokenAddress,
         expiry: body.expiry.toString(),
         createdAt: new Date().toISOString(),
       });
