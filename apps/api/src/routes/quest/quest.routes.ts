@@ -140,6 +140,10 @@ questRouter.openapi(
           reward: body.reward,
           tokenAddress: body.tokenAddress,
           expiry: body.expiry,
+          fromAddress: body.fromAddress || null,
+          amount: body.amount || null,
+          tokenAddress: body.tokenAddress || null,
+          nftAddress: body.nftAddress || null,
         })
         .returning();
 

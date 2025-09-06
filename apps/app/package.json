@@ -5,10 +5,11 @@
   "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "bunx --bun vite",
+    "build": "bunx --bun vite build",
+    "start": "bunx --bun vite preview --host 0.0.0.0 --port 3000",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "test": "bun test"
   },
   "dependencies": {
     "@civic/auth-web3": "^0.7.2",
