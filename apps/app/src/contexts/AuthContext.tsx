@@ -4,13 +4,13 @@ import { AuthService } from '../services/auth.service';
 import type { User } from '../types/api';
 
 interface AuthContextType {
-  user: any | null;
+  user: CivicAuth | null;
   dbUser: User | null;
   isLoading: boolean;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   setDbUser: (user: User | null) => void;
-  setUser: (user: any | null) => void;
+  setUser: (user: CivicAuth | null) => void;
   setIsLoading: (loading: boolean) => void;
 }
 
@@ -21,18 +21,17 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<CivicAuth | null>(null);
   const [dbUser, setDbUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [authClient, setAuthClient] = useState<any>(null);
+  const [authClient, setAuthClient] = useState<CivicAuth | null>(null);
 
-  // Initialize Civic Auth client
   useEffect(() => {
     const initAuth = async () => {
       try {
         const client = await CivicAuth.create({
-          loginUrl: `https://eth-warsaw-2025-monorepo-production.up.railway.app/auth/auth/`,
-          logging: { enabled: true },
+          loginUrl:
+            'https://eth-warsaw-2025-monorepo-production.up.railway.app/auth/auth',
         });
         setAuthClient(client);
       } catch (error) {
