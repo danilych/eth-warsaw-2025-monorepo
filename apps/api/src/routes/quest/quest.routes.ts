@@ -8,15 +8,17 @@ import {
   CreateQuestSchema,
   QuestSchema,
   UpdateQuestSchema,
-  UserQuestSchema,
   QuestWithUserStatusSchema,
 } from './schema/quest.schema';
 import { NotFoundException } from 'lib/exceptions/http';
 import { QuestService } from '../../services/blockchain/quest.service';
+import { SignatureService } from '../../services/blockchain/signature.service';
+import { authMiddleware } from '../../middlewares/auth.middleware';
+import type { Env } from '../../env';
 
 const openApiTags = ['Quest'];
-export const questRouter = new OpenAPIHono();
-
+export const questRouter = new OpenAPIHono<Env>();
+questRouter.use('/{questId}/claim', authMiddleware());
 questRouter.openapi(
   withSerializer(
     createRoute({
@@ -323,7 +325,7 @@ questRouter.openapi(
       },
       responses: {
         200: openapiSuccessResponse({
-          schema: UserQuestSchema,
+          schema: QuestWithUserStatusSchema,
         }),
         404: {
           description: 'User quest not found',
@@ -342,25 +344,47 @@ questRouter.openapi(
   async (c) => {
     const { userId, questId } = c.req.valid('param');
 
-    const [userQuest] = await db
-      .select()
-      .from(userQuests)
+    const [result] = await db
+      .select({
+        id: quests.id,
+        name: quests.name,
+        description: quests.description,
+        imageUrl: quests.imageUrl,
+        questType: quests.questType,
+        target: quests.target,
+        reward: quests.reward,
+        tokenAddress: quests.tokenAddress,
+        expiry: quests.expiry,
+        createdAt: quests.createdAt,
+        updatedAt: quests.updatedAt,
+        deletedAt: quests.deletedAt,
+        userStatus: {
+          id: userQuests.id,
+          userId: userQuests.userId,
+          status: userQuests.status,
+          createdAt: userQuests.createdAt,
+          updatedAt: userQuests.updatedAt,
+        },
+      })
+      .from(quests)
+      .innerJoin(userQuests, eq(quests.id, userQuests.questId))
       .where(
         and(
           eq(userQuests.userId, userId),
           eq(userQuests.questId, questId),
-          isNull(userQuests.deletedAt)
+          isNull(userQuests.deletedAt),
+          isNull(quests.deletedAt)
         )
       )
       .limit(1);
 
-    if (!userQuest) {
+    if (!result) {
       throw NotFoundException;
     }
 
     return c.json({
       success: true,
-      data: userQuest,
+      data: result,
     });
   }
 );
@@ -402,5 +426,95 @@ questRouter.openapi(
       success: true,
       data: userQuestsWithQuests,
     });
+  }
+);
+
+questRouter.openapi(
+  withSerializer(
+    createRoute({
+      method: 'post',
+      path: '/{questId}/claim',
+      tags: openApiTags,
+      request: {
+        params: z.object({
+          questId: z.string().uuid('Invalid quest ID format'),
+        }),
+      },
+      responses: {
+        200: openapiSuccessResponse({
+          schema: z.object({
+            signature: z.string(),
+            questId: z.string().uuid(),
+            userAddress: z.string(),
+          }),
+        }),
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: z.object({
+                success: z.boolean(),
+                message: z.string(),
+              }),
+            },
+          },
+        },
+        404: {
+          description: 'Quest not found',
+          content: {
+            'application/json': {
+              schema: z.object({
+                success: z.boolean(),
+                message: z.string(),
+              }),
+            },
+          },
+        },
+      },
+    })
+  ),
+  async (c) => {
+    try {
+      const { questId } = c.req.valid('param');
+
+      // Get authenticated user data from JWT token
+      const user = await c.get('civicAuth').getUser();
+
+      if (!user || !user.walletAddress) {
+        return c.json(
+          { success: false, message: 'User wallet address not found' },
+          400
+        );
+      }
+
+      // Verify quest exists
+      const [quest] = await db
+        .select()
+        .from(quests)
+        .where(and(eq(quests.id, questId), isNull(quests.deletedAt)))
+        .limit(1);
+
+      if (!quest) {
+        throw NotFoundException;
+      }
+
+      // Generate EIP-712 signature
+      const signature = await SignatureService.generateEIP712Signature(
+        questId,
+        user.walletAddress
+      );
+
+      return c.json({
+        success: true,
+        data: {
+          signature,
+          questId,
+          userAddress: user.walletAddress,
+        },
+      });
+    } catch (error) {
+      console.error('Error claiming quest:', error);
+      return c.json({ success: false, message: 'Failed to claim quest' }, 500);
+    }
   }
 );

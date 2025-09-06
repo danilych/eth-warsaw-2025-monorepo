@@ -1,11 +1,7 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
-import {
-  openapiSuccessResponse,
-  withSerializer,
-  openapiBody,
-} from 'lib/utils/openapi';
+import { openapiSuccessResponse, withSerializer } from 'lib/utils/openapi';
 import { z } from 'zod';
-import { type HandleCallbackRequest } from '@civic/auth/server';
+import type { HandleCallbackRequest } from '@civic/auth/server';
 import type { Env } from '../../env';
 
 const openApiTags = ['Auth'];
@@ -83,7 +79,7 @@ authRouter.openapi(
       }
 
       return c.json({ error: 'Internal server error' }, 500);
-    } catch (error) {
+    } catch {
       return c.redirect('/?error=auth_failed');
     }
   }
