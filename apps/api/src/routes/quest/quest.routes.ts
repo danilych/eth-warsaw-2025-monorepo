@@ -146,7 +146,7 @@ questRouter.openapi(
         },
         201
       );
-    } catch (error) {
+    } catch {
       return c.json({ success: false, message: 'Failed to create quest' }, 400);
     }
   }
@@ -227,7 +227,7 @@ questRouter.openapi(
         success: true,
         data: updatedQuest,
       });
-    } catch (error) {
+    } catch {
       return c.json({ success: false, message: 'Failed to update quest' }, 400);
     }
   }
@@ -290,7 +290,7 @@ questRouter.openapi(
         success: true,
         data: { message: 'Quest deleted successfully' },
       });
-    } catch (error) {
+    } catch {
       return c.json({ success: false, message: 'Failed to delete quest' }, 400);
     }
   }
