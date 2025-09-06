@@ -7,6 +7,7 @@ import {
   bigint,
   text,
   index,
+  integer,
 } from 'drizzle-orm/pg-core';
 import { ENetworks } from 'lib/enums/networks';
 import { EQuestTypes, EQuestStatuses } from 'lib/enums/quests';
@@ -44,11 +45,14 @@ export const users = pgTable('users', {
 
 export const quests = pgTable('quests', {
   ...commonColumns,
-  name: text().notNull(),
-  description: text().notNull(),
+  name: text('name').notNull(),
+  description: text('description').notNull(),
   imageUrl: text('image_url'),
   questType: questTypeEnum('quest_type').notNull(),
-  target: text().notNull(),
+  target: text('target').notNull(),
+  reward: bigint('reward', { mode: 'bigint' }).notNull(),
+  tokenAddress: text('token_address').notNull(),
+  expiry: integer('expiry').notNull().default(0),
 });
 
 export const userQuests = pgTable('user_quests', {
