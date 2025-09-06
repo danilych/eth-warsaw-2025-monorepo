@@ -146,7 +146,7 @@ authRouter.openapi(
       const user = await c.get('civicAuth').getUser();
 
       if (!user || user.id !== id) {
-        throw NotFoundException;
+        throw new NotFoundException('User not found');
       }
 
       await db

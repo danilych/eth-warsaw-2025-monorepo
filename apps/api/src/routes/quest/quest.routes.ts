@@ -88,7 +88,7 @@ questRouter.openapi(
       .limit(1);
 
     if (!quest) {
-      throw NotFoundException;
+      throw new NotFoundException('Quest not found');
     }
 
     return c.json({
@@ -233,7 +233,7 @@ questRouter.openapi(
         .limit(1);
 
       if (!existingQuest) {
-        throw NotFoundException;
+        throw new NotFoundException('Quest not found');
       }
 
       const updateData = { ...body, updatedAt: new Date() };
@@ -296,7 +296,7 @@ questRouter.openapi(
         .limit(1);
 
       if (!existingQuest) {
-        throw NotFoundException;
+        throw new NotFoundException('Quest not found');
       }
 
       await db
@@ -386,7 +386,7 @@ questRouter.openapi(
       .limit(1);
 
     if (!result) {
-      throw NotFoundException;
+      throw new NotFoundException('Quest not found');
     }
 
     return c.json({
@@ -497,7 +497,7 @@ questRouter.openapi(
         .limit(1);
 
       if (!user) {
-        throw NotFoundException;
+        throw new NotFoundException('User not found');
       }
 
       const [quest] = await db
@@ -507,7 +507,7 @@ questRouter.openapi(
         .limit(1);
 
       if (!quest) {
-        throw NotFoundException;
+        throw new NotFoundException('Quest not found');
       }
 
       const signature = await SignatureService.generateEIP712Signature(
