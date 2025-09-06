@@ -2,6 +2,7 @@
   "name": "letdate",
   "module": "src/main.ts",
   "type": "module",
+  "license": "GPL-3.0-or-later",
   "scripts": {
     "lint": "bun x @biomejs/biome check {apps,lib}",
     "lint:fix": "bun x @biomejs/biome check --write {apps,lib}",
