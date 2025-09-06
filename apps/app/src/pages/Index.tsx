@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUnusedImports: <explanation>
 import React from 'react';
 import { HeroSection } from '@/components/landing/components/HeroSection';
 import { HowItWorksSection } from '@/components/landing/components/HowItWorksSection';

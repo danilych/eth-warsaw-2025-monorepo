@@ -3,7 +3,11 @@ const API_BASE_URL =
   'https://eth-warsaw-2025-monorepo-production.up.railway.app';
 
 export class ApiError extends Error {
-  constructor(message: string, public status: number, public response?: any) {
+  constructor(
+    message: string,
+    public status: number,
+    public response?: unknown
+  ) {
     super(message);
     this.name = 'ApiError';
   }
@@ -67,7 +71,7 @@ class ApiClient {
 
   async post<T>(
     endpoint: string,
-    data?: any,
+    data?: unknown,
     options?: RequestInit
   ): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
@@ -79,7 +83,7 @@ class ApiClient {
 
   async put<T>(
     endpoint: string,
-    data?: any,
+    data?: unknown,
     options?: RequestInit
   ): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {

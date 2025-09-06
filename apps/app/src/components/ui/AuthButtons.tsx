@@ -1,7 +1,8 @@
+// biome-ignore lint/correctness/noUnusedImports: <explanation>
 import React from 'react';
 import { Button } from './button';
-import { LogIn, LogOut, User } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { LogIn } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 interface LoginButtonProps {
   variant?: 'default' | 'outline' | 'ghost' | 'hero';
@@ -9,7 +10,11 @@ interface LoginButtonProps {
   className?: string;
 }
 
-export function LoginButton({ variant = 'default', size = 'default', className }: LoginButtonProps) {
+export function LoginButton({
+  variant = 'default',
+  size = 'default',
+  className,
+}: LoginButtonProps) {
   const { signIn, isLoading } = useAuth();
 
   const handleLogin = async () => {
@@ -36,25 +41,5 @@ export function LoginButton({ variant = 'default', size = 'default', className }
         </div>
       )}
     </Button>
-  );
-}
-
-export function UserProfileButton() {
-  const { user, signOut } = useAuth();
-
-  if (!user) return null;
-
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
-        <User className="w-4 h-4" />
-        <span className="text-sm font-medium">
-          {user.id?.slice(0, 6)}...{user.id?.slice(-4)}
-        </span>
-      </div>
-      <Button onClick={signOut} variant="ghost" size="sm">
-        <LogOut className="w-4 h-4" />
-      </Button>
-    </div>
   );
 }
