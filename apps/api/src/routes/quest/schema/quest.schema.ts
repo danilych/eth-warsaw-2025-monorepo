@@ -26,15 +26,24 @@ export const UserQuestSchema = z.object({
   updatedAt: z.string().nullable(),
 });
 
-export const UserQuestWithQuestSchema = z.object({
+export const QuestWithUserStatusSchema = z.object({
   id: z.string().uuid(),
-  userId: z.string().uuid(),
-  questId: z.string().uuid(),
-  status: QuestStatusSchema,
-  progress: z.string().nullable(),
+  name: z.string(),
+  description: z.string(),
+  imageUrl: z.string().nullable(),
+  questType: QuestTypeSchema,
+  target: z.string(),
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
-  quest: QuestSchema,
+  deletedAt: z.string().nullable(),
+  userStatus: z.object({
+    id: z.string().uuid(),
+    userId: z.string().uuid(),
+    status: QuestStatusSchema,
+    progress: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string().nullable(),
+  }).nullable(),
 });
 
 export const CreateQuestSchema = z.object({

@@ -4,14 +4,14 @@ import { z } from 'zod';
 import { eq, isNull, and } from 'drizzle-orm';
 import { db } from '../../databases/main-postgres';
 import { quests, userQuests } from '../../databases/main-postgres/schema';
-import { EQuestStatuses, EQuestTypes } from 'lib/enums/quests';
 import {
   CreateQuestSchema,
   QuestSchema,
   UpdateQuestSchema,
   UserQuestSchema,
-  UserQuestWithQuestSchema,
+  QuestWithUserStatusSchema,
 } from './schema/quest.schema';
+import { NotFoundException } from 'lib/exceptions/http';
 
 const openApiTags = ['Quest'];
 export const questRouter = new OpenAPIHono();
@@ -81,7 +81,7 @@ questRouter.openapi(
       .limit(1);
 
     if (!quest) {
-      return c.json({ success: false, message: 'Quest not found' }, 404);
+      throw NotFoundException;
     }
 
     return c.json({
@@ -211,7 +211,7 @@ questRouter.openapi(
         .limit(1);
 
       if (!existingQuest) {
-        return c.json({ success: false, message: 'Quest not found' }, 404);
+        throw NotFoundException;
       }
 
       const updatedQuest = await db
@@ -275,7 +275,7 @@ questRouter.openapi(
         .limit(1);
 
       if (existingQuest.length === 0) {
-        return c.json({ success: false, message: 'Quest not found' }, 404);
+        throw NotFoundException;
       }
 
       await db
@@ -342,7 +342,7 @@ questRouter.openapi(
       .limit(1);
 
     if (userQuest.length === 0) {
-      return c.json({ success: false, message: 'User quest not found' }, 404);
+      throw NotFoundException;
     }
 
     return c.json({
@@ -365,7 +365,7 @@ questRouter.openapi(
       },
       responses: {
         200: openapiSuccessResponse({
-          schema: z.array(UserQuestWithQuestSchema),
+          schema: z.array(QuestWithUserStatusSchema),
         }),
       },
     })
