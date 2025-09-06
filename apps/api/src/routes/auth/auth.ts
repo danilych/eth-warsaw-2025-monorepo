@@ -66,7 +66,7 @@ authRouter.openapi(
       const result = await c.get('civicAuth').handleCallback({
         code,
         state,
-        req: c.req as unknown as HandleCallbackRequest,
+        req: c.req.raw as unknown as HandleCallbackRequest,
       });
 
       if (result.redirectTo) {
