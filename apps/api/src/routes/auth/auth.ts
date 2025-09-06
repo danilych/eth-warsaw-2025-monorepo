@@ -82,7 +82,8 @@ authRouter.openapi(
       }
 
       return c.json({ error: 'Internal server error' }, 500);
-    } catch {
+    } catch (error) {
+      console.error('Auth callback error:', error);
       return c.redirect('/?error=auth_failed');
     }
   }
