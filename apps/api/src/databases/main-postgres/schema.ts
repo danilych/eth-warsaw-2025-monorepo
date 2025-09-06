@@ -13,6 +13,8 @@ import {
 import { ENetworks } from 'lib/enums/networks';
 import { EQuestTypes, EQuestStatuses } from 'lib/enums/quests';
 
+const fundsAmount = () => numeric({ precision: 65, scale: 25 });
+
 const id = () =>
   uuid()
     .primaryKey()
@@ -87,3 +89,25 @@ export const blockchainParserState = pgTable(
   },
   (table) => [index('blockchain_parser_state_network_idx').on(table.network)]
 );
+
+export const userBalances = pgTable('user_balances', {
+  ...commonColumns,
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id),
+  balance: fundsAmount().notNull(),
+});
+
+export const userClaims = pgTable('user_claims', {
+  ...commonColumns,
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id),
+  questId: uuid('quest_id')
+    .notNull()
+    .references(() => quests.id),
+  claimAmount: fundsAmount().notNull(),
+  claimTokenAddress: text('claim_token_address').notNull(),
+  claimTimestamp: bigint({ mode: 'number' }).notNull(),
+  claimTransactionHash: text('claim_transaction_hash').notNull(),
+});

@@ -295,7 +295,7 @@ export namespace ActionsValidatorService {
       questId,
       userWalletAddress,
       EQuestStatuses.IN_PROGRESS,
-      EQuestStatuses.COMPLETED
+      EQuestStatuses.CLAIM
     );
   };
 
@@ -349,7 +349,7 @@ export namespace ActionsValidatorService {
       questId,
       userWalletAddress,
       EQuestStatuses.IN_PROGRESS,
-      EQuestStatuses.COMPLETED
+      EQuestStatuses.CLAIM
     );
   };
 

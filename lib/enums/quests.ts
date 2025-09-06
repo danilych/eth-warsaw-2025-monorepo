@@ -6,6 +6,7 @@ export enum EQuestTypes {
 }
 
 export enum EQuestStatuses {
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CLAIM = 'CLAIM',
 }
