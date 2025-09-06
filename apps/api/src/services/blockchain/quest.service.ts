@@ -1,7 +1,7 @@
 import { Contract, Wallet } from 'ethers';
 import { ENetworks } from 'lib/enums/networks';
 import { EvmService } from './evm.service';
-import { QUEST_CONTRACT } from '../../constants/quest.contract';
+import { QUEST_CONTRACT } from '../../abis/quest.abi';
 
 export namespace QuestService {
   export const getReadContract = () => {
