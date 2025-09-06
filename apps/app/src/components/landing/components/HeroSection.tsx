@@ -1,7 +1,8 @@
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { InteractiveCanvas } from './InteractiveCanvas';
 import { ArrowRight, Sparkles } from 'lucide-react';
-import React from 'react';
+import { Link } from 'react-router-dom';
 
 export const HeroSection = () => {
   return (
@@ -39,10 +40,12 @@ export const HeroSection = () => {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Button variant="hero" size="xl" className="group animate-glow-pulse">
-            Start Your Quest
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </Button>
+          <Link to="/dashboard">
+            <Button variant="hero" size="xl" className="group animate-glow-pulse">
+              Start Your Quest
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
         </div>
 
         {/* Stats */}
