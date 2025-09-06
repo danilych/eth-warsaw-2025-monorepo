@@ -31,9 +31,10 @@
     "@hono/zod-validator": "^0.4.1",
     "dotenv": "^17.2.2",
     "drizzle-orm": "^0.38.4",
+    "ethers": "^6.15.0",
     "hono": "^4.6.11",
-    "lib": "workspace:lib",
     "pg": "^8.13.3",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.3",
+    "lib": "workspace:lib"
   }
 }
