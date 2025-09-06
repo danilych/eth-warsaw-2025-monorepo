@@ -3,7 +3,11 @@ import { openapiSuccessResponse, withSerializer } from 'lib/utils/openapi';
 import { z } from 'zod';
 import { eq, isNull, and } from 'drizzle-orm';
 import { db } from '../../databases/main-postgres';
-import { quests, userQuests } from '../../databases/main-postgres/schema';
+import {
+  quests,
+  userQuests,
+  users,
+} from '../../databases/main-postgres/schema';
 import {
   CreateQuestSchema,
   QuestSchema,
@@ -370,7 +374,7 @@ questRouter.openapi(
         },
       })
       .from(quests)
-      .innerJoin(userQuests, eq(quests.id, userQuests.questId))
+      .leftJoin(userQuests, eq(quests.id, userQuests.questId))
       .where(
         and(
           eq(userQuests.userId, userId),
@@ -441,7 +445,6 @@ questRouter.openapi(
       request: {
         params: z.object({
           questId: z.string().uuid('Invalid quest ID format'),
-          walletAddress: z.string().min(42).max(42),
         }),
       },
       responses: {
@@ -487,6 +490,16 @@ questRouter.openapi(
         return c.json({ success: false, message: 'User not found' }, 400);
       }
 
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(and(eq(users.civicId, baseUser.id)))
+        .limit(1);
+
+      if (!user) {
+        throw NotFoundException;
+      }
+
       const [quest] = await db
         .select()
         .from(quests)
@@ -499,7 +512,7 @@ questRouter.openapi(
 
       const signature = await SignatureService.generateEIP712Signature(
         questId,
-        c.req.valid('param').walletAddress
+        user.walletAddress
       );
 
       return c.json({
@@ -507,7 +520,7 @@ questRouter.openapi(
         data: {
           signature,
           questId,
-          userAddress: c.req.valid('param').walletAddress,
+          userAddress: user.walletAddress,
         },
       });
     } catch (error) {
