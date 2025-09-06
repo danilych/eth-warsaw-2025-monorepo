@@ -15,13 +15,6 @@ import { cors } from 'hono/cors';
 // Init
 export const app = new OpenAPIHono<Env>();
 
-app.use('*', async (c, next) => {
-  const storage = new HonoCookieStorage(c);
-  c.set('storage', storage);
-  c.set('civicAuth', new CivicAuth(storage, civicConfig()));
-  return next();
-});
-
 app.use(
   '*',
   cors({
@@ -31,8 +24,18 @@ app.use(
       'https://28546b252a03.ngrok-free.app',
     ],
     credentials: true,
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    exposeHeaders: ['Set-Cookie'],
   })
 );
+
+app.use('*', async (c, next) => {
+  const storage = new HonoCookieStorage(c);
+  c.set('storage', storage);
+  c.set('civicAuth', new CivicAuth(storage, civicConfig()));
+  return next();
+});
 
 // Exceptions
 app.notFound((c) => c.json({ success: false, message: 'No Such Route' }, 404));

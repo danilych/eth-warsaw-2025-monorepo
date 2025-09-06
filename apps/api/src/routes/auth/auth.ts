@@ -59,9 +59,9 @@ authRouter.openapi(
   ),
   async (c) => {
     try {
-      const code = c.req.query('code') as string;
-      const state = c.req.query('state') as string;
-      c.req.valid('query');
+      const { code, state } = c.req.valid('query');
+
+      console.log({ code, state, req: c.req });
 
       const result = await c.get('civicAuth').handleCallback({
         code,
@@ -145,7 +145,7 @@ authRouter.openapi(
       const { id, walletAddress } = c.req.valid('query');
       const user = await c.get('civicAuth').getUser();
 
-      console.log(user, id)
+      console.log(user, id);
 
       if (!user || user.id !== id) {
         throw new NotFoundException('User not found');
@@ -158,6 +158,7 @@ authRouter.openapi(
         data: user,
       });
     } catch (err) {
+      console.error('Auth user error:', err);
       return c.json({ success: false, message: 'Failed to get user' }, 400);
     }
   }
