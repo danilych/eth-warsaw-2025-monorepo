@@ -22,6 +22,13 @@
       "when": 1757165001546,
       "tag": "0002_update-quest-scheme",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1757174563655,
+      "tag": "0003_update-user-table",
+      "breakpoints": true
     }
   ]
 }

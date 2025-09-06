@@ -1,9 +1,15 @@
 import { JsonRpcProvider } from 'ethers';
 import type { ENetworks } from 'lib/enums/networks';
+import { CONFIG } from '../../config';
 
 export namespace EvmService {
   export const getJsonRpcProvider = (network: ENetworks) => {
-    return new JsonRpcProvider(network);
+    const networkKey = network.toUpperCase() as keyof typeof CONFIG.PARSING;
+    const rpcUrl = CONFIG.PARSING[networkKey]?.RPC_URL;
+    if (!rpcUrl) {
+      throw new Error(`RPC URL for network ${network} not found`);
+    }
+    return new JsonRpcProvider(rpcUrl);
   };
 
   export const getCurrentBlockNumber = async (provider: JsonRpcProvider) => {

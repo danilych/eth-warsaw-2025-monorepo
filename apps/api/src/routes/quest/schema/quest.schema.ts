@@ -14,6 +14,9 @@ export const QuestSchema = z.object({
   reward: z.bigint(),
   tokenAddress: z.string(),
   expiry: z.number(),
+  fromAddress: z.string().nullable(),
+  amount: z.string().nullable(), // Using string to handle numeric precision
+  nftAddress: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
   deletedAt: z.string().nullable(),
@@ -34,7 +37,9 @@ export const QuestWithUserStatusSchema = z.object({
   description: z.string(),
   imageUrl: z.string().nullable(),
   questType: QuestTypeSchema,
-  target: z.string(),
+  fromAddress: z.string().nullable(),
+  amount: z.string().nullable(),
+  nftAddress: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
   deletedAt: z.string().nullable(),
@@ -70,18 +75,39 @@ export const CreateQuestSchema = z.object({
     .optional()
     .or(z.literal('')),
   questType: QuestTypeSchema,
-  target: z
+  rewardTokenAddress: z
     .string()
-    .min(1, 'Target is required')
-    .max(200, 'Target must be less than 200 characters')
+    .min(1, 'Reward token address is required')
+    .max(42, 'Reward token address must be less than 42 characters')
+    .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address'),
+  fromAddress: z
+    .string()
+    .min(1, 'From address is required')
+    .max(42, 'From address must be less than 42 characters')
+    .trim(),
+  toAddress: z
+    .string()
+    .min(1, 'To address is required')
+    .max(42, 'To address must be less than 42 characters')
     .trim(),
   reward: z.string().transform((val) => {
     const ethAmount = Number.parseFloat(val);
-    const weiAmount = ethAmount * (10 ** 18);
+    const weiAmount = ethAmount * 10 ** 18;
     return BigInt(Math.floor(weiAmount));
   }),
-  tokenAddress: z.string().min(1, 'Token address is required'),
   expiry: z.number().int().min(0, 'Expiry must be a non-negative integer'),
+  amount: z
+    .string()
+    .regex(/^\d+(\.\d+)?$/, 'Must be a valid number')
+    .optional(),
+  tokenAddress: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
+    .optional(),
+  nftAddress: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
+    .optional(),
 });
 
 export const UpdateQuestSchema = z
@@ -105,18 +131,38 @@ export const UpdateQuestSchema = z
       .optional()
       .or(z.literal('')),
     questType: QuestTypeSchema.optional(),
-    target: z
+    fromAddress: z
       .string()
-      .min(1, 'Target is required')
-      .max(200, 'Target must be less than 200 characters')
-      .trim()
+      .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
       .optional(),
-    reward: z.string().transform((val) => {
-      const ethAmount = Number.parseFloat(val);
-      const weiAmount = ethAmount * (10 ** 18);
-      return BigInt(Math.floor(weiAmount));
-    }).optional(),
-    tokenAddress: z.string().optional(),
+    toAddress: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
+      .optional(),
+    amount: z
+      .string()
+      .regex(/^\d+(\.\d+)?$/, 'Must be a valid number')
+      .optional(),
+    tokenAddress: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
+      .optional(),
+    nftAddress: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
+      .optional(),
+    reward: z
+      .string()
+      .transform((val) => {
+        const ethAmount = Number.parseFloat(val);
+        const weiAmount = ethAmount * 10 ** 18;
+        return BigInt(Math.floor(weiAmount));
+      })
+      .optional(),
+    rewardTokenAddress: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
+      .optional(),
     expiry: z
       .number()
       .int()

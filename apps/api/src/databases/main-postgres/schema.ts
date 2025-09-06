@@ -8,9 +8,12 @@ import {
   text,
   index,
   integer,
+  numeric,
 } from 'drizzle-orm/pg-core';
 import { ENetworks } from 'lib/enums/networks';
 import { EQuestTypes, EQuestStatuses } from 'lib/enums/quests';
+
+const fundsAmount = () => numeric({ precision: 65, scale: 25 });
 
 const id = () =>
   uuid()
@@ -40,6 +43,7 @@ export const questStatusEnum = pgEnumTyped(
 
 export const users = pgTable('users', {
   ...commonColumns,
+  civicId: text('civic_id').notNull().unique(),
   walletAddress: text('wallet_address').notNull().unique(),
 });
 
@@ -49,10 +53,14 @@ export const quests = pgTable('quests', {
   description: text('description').notNull(),
   imageUrl: text('image_url'),
   questType: questTypeEnum('quest_type').notNull(),
-  target: text('target').notNull(),
-  reward: bigint('reward', { mode: 'bigint' }).notNull(),
-  tokenAddress: text('token_address').notNull(),
+  rewardAmount: bigint('reward_amount', { mode: 'bigint' }).notNull(),
+  rewardTokenAddress: text('reward_token_address').notNull(),
   expiry: integer('expiry').notNull().default(0),
+  fromAddress: text('from_address'),
+  toAddress: text('to_address'),
+  amount: numeric('amount'),
+  tokenAddress: text('token_address'),
+  nftAddress: text('nft_address'),
 });
 
 export const userQuests = pgTable('user_quests', {
@@ -81,3 +89,25 @@ export const blockchainParserState = pgTable(
   },
   (table) => [index('blockchain_parser_state_network_idx').on(table.network)]
 );
+
+export const userBalances = pgTable('user_balances', {
+  ...commonColumns,
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id),
+  balance: fundsAmount().notNull(),
+});
+
+export const userClaims = pgTable('user_claims', {
+  ...commonColumns,
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id),
+  questId: uuid('quest_id')
+    .notNull()
+    .references(() => quests.id),
+  claimAmount: fundsAmount().notNull(),
+  claimTokenAddress: text('claim_token_address').notNull(),
+  claimTimestamp: bigint({ mode: 'number' }).notNull(),
+  claimTransactionHash: text('claim_transaction_hash').notNull(),
+});
