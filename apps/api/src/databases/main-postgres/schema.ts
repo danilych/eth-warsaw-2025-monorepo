@@ -70,12 +70,12 @@ export const userQuests = pgTable('user_quests', {
   status: questStatusEnum('quest_status').notNull(),
 });
 // Blockchain parser enums
-const blockchainNetworkEnum = pgEnumTyped(
+export const blockchainNetworkEnum = pgEnumTyped(
   'blockchain_network',
   Object.values(ENetworks)
 );
 
-const parsingStatusEnum = pgEnumTyped('parsing_status', [
+export const parsingStatusEnum = pgEnumTyped('parsing_status', [
   'pending',
   'processing',
   'completed',
@@ -83,7 +83,7 @@ const parsingStatusEnum = pgEnumTyped('parsing_status', [
   'retrying',
 ]);
 
-const actionStatusEnum = pgEnumTyped('action_status', [
+export const actionStatusEnum = pgEnumTyped('action_status', [
   'pending',
   'validating',
   'valid',
