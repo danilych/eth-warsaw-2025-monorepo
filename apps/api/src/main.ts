@@ -28,6 +28,7 @@ app.use(
     origin: [
       'http://localhost:3000',
       'https://eth-warsaw-2025-monorepo-production.up.railway.app',
+      'https://28546b252a03.ngrok-free.app',
     ],
     credentials: true,
   })
