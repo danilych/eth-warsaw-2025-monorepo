@@ -12,7 +12,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@civic/auth-web3": "^0.7.2",
+    "@civic/auth": "^0.9.5",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",

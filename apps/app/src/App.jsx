@@ -11,12 +11,9 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Get Civic Client ID from environment variables
-const CIVIC_CLIENT_ID = '49631f1e-af8d-4112-8b72-8c108575ccef';
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider clientId={CIVIC_CLIENT_ID}>
+    <AuthProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />

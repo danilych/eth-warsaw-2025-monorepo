@@ -16,8 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { QuestService } from '../services/quest.service';
-import { WalletSetup } from '../components/auth/WalletSetup';
-import { LoginButton, UserProfileButton } from '../components/auth/LoginButton';
+import { LoginButton, UserProfileButton } from '../components/ui/AuthButtons';
 import type { Quest, QuestWithUserStatus, QuestType } from '../types/api';
 import { Link } from 'react-router-dom';
 
@@ -26,7 +25,6 @@ export default function Dashboard() {
   const [quests, setQuests] = useState<Quest[]>([]);
   const [userQuests, setUserQuests] = useState<QuestWithUserStatus[]>([]);
   const [isLoadingQuests, setIsLoadingQuests] = useState(true);
-  const [showWalletSetup, setShowWalletSetup] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
@@ -38,12 +36,6 @@ export default function Dashboard() {
       loadUserQuests();
     }
   }, [dbUser]);
-
-  useEffect(() => {
-    if (user && !dbUser) {
-      setShowWalletSetup(true);
-    }
-  }, [user, dbUser]);
 
   const loadQuests = async () => {
     try {
@@ -68,11 +60,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleWalletCreated = (address: string) => {
-    setShowWalletSetup(false);
-    // Refresh user data
-    loadUserQuests();
-  };
 
   const getQuestTypeColor = (questType: QuestType) => {
     const colors = {
@@ -125,9 +112,6 @@ export default function Dashboard() {
     );
   }
 
-  if (showWalletSetup) {
-    return <WalletSetup onWalletCreated={handleWalletCreated} />;
-  }
 
   const completedQuests = userQuests.filter(q => q.userStatus?.status === 'COMPLETED').length;
   const totalRewards = userQuests
