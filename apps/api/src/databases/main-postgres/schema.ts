@@ -18,7 +18,7 @@ const fundsAmount = () => numeric({ precision: 65, scale: 25 });
 const id = () =>
   uuid()
     .primaryKey()
-    .default(sql`uuid_generate_v7()`);
+    .default(sql`uuid_generate_v4()`);
 
 const pgEnumTyped = <T extends string, U extends [T, ...T[]] = [T, ...T[]]>(
   name: string,

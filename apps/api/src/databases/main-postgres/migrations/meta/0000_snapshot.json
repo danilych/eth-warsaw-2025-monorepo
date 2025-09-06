@@ -1,6 +1,6 @@
 {
-  "id": "ed54c719-5dd6-45dd-9b15-b00f4f84e853",
-  "prevId": "3c6ede26-c489-4d80-83ca-6518c5a9a3d7",
+  "id": "c4312bdf-dfb0-4c26-94d8-e5a36b796f34",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -13,7 +13,7 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "uuid_generate_v7()"
+          "default": "uuid_generate_v4()"
         },
         "updated_at": {
           "name": "updated_at",
@@ -90,7 +90,7 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "uuid_generate_v7()"
+          "default": "uuid_generate_v4()"
         },
         "updated_at": {
           "name": "updated_at",
@@ -194,6 +194,173 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.user_balances": {
+      "name": "user_balances",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuid_generate_v4()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "balance": {
+          "name": "balance",
+          "type": "numeric(65, 25)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_balances_user_id_users_id_fk": {
+          "name": "user_balances_user_id_users_id_fk",
+          "tableFrom": "user_balances",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_claims": {
+      "name": "user_claims",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuid_generate_v4()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quest_id": {
+          "name": "quest_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "claim_amount": {
+          "name": "claim_amount",
+          "type": "numeric(65, 25)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "claim_token_address": {
+          "name": "claim_token_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "claim_timestamp": {
+          "name": "claim_timestamp",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "claim_transaction_hash": {
+          "name": "claim_transaction_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_claims_user_id_users_id_fk": {
+          "name": "user_claims_user_id_users_id_fk",
+          "tableFrom": "user_claims",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_claims_quest_id_quests_id_fk": {
+          "name": "user_claims_quest_id_quests_id_fk",
+          "tableFrom": "user_claims",
+          "tableTo": "quests",
+          "columnsFrom": [
+            "quest_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.user_quests": {
       "name": "user_quests",
       "schema": "",
@@ -203,7 +370,7 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "uuid_generate_v7()"
+          "default": "uuid_generate_v4()"
         },
         "updated_at": {
           "name": "updated_at",
@@ -288,7 +455,7 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "uuid_generate_v7()"
+          "default": "uuid_generate_v4()"
         },
         "updated_at": {
           "name": "updated_at",
@@ -359,8 +526,9 @@
       "name": "quest_status",
       "schema": "public",
       "values": [
-        "in_progress",
-        "completed"
+        "IN_PROGRESS",
+        "COMPLETED",
+        "CLAIM"
       ]
     },
     "public.quest_type": {
