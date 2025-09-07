@@ -20,7 +20,7 @@ export namespace ActionsValidatorService {
       .select()
       .from(blockchainParserState)
       .where(eq(blockchainParserState.network, ENetworks.ZETACHAIN));
-    return block.lastProcessedBlock ?? CONFIG.PARSING.ARBITRUM.START_BLOCK;
+    return block?.lastProcessedBlock ?? CONFIG.PARSING.ARBITRUM.START_BLOCK;
   };
 
   export const saveLastProcessedBlockNumber = async (blockNumber: number) => {
