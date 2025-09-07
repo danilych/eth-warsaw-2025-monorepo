@@ -16,6 +16,7 @@ export const useAuth = () => {
         });
         setAuthClient(client);
         const currentCivicUser = await client.getCurrentUser();
+        console.log('currentCivicUser', currentCivicUser);
         if (currentCivicUser) {
           setUser(currentCivicUser);
         }
