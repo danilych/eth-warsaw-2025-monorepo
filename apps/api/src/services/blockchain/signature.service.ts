@@ -2,15 +2,16 @@ import { Wallet, type TypedDataDomain, type TypedDataField } from 'ethers';
 
 export namespace SignatureService {
   const DOMAIN: TypedDataDomain = {
-    name: 'QuestSignature',
+    name: 'Claimer',
     version: '1',
     chainId: 42161,
+    verifyingContract: '0xbE8D5D3Bed95d727A31522dC36f3AB3fD2CE7c2f',
   };
 
   const TYPES: Record<string, TypedDataField[]> = {
-    QuestVerification: [
-      { name: 'uuid', type: 'string' },
-      { name: 'address', type: 'address' },
+    Claim: [
+      { name: 'questId', type: 'string' },
+      { name: 'user', type: 'address' },
     ],
   };
 
@@ -43,15 +44,15 @@ export namespace SignatureService {
 
   export const verifyEIP712Signature = async (
     signature: string,
-    uuid: string,
-    address: string
+    questId: string,
+    user: string
   ): Promise<string> => {
     try {
       const { verifyTypedData } = await import('ethers');
 
       const message = {
-        uuid,
-        address,
+        questId,
+        user,
       };
 
       const recoveredAddress = verifyTypedData(

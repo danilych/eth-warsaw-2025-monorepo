@@ -28,7 +28,14 @@ authRouter.openapi(
       },
       responses: {
         200: openapiSuccessResponse({
-          schema: z.string(),
+          schema: z
+            .object({
+              id: z.string(),
+              civicId: z.string(),
+              walletAddress: z.string(),
+              civicWalletAddress: z.string(),
+            })
+            .nullish(),
         }),
       },
     })
@@ -42,15 +49,23 @@ authRouter.openapi(
         throw new NotFoundException('User not found');
       }
 
-      await db.insert(users).values({
-        walletAddress: walletAddress.toString(),
-        civicId: id,
-        civicWalletAddress: civicWalletAddress.toString(),
-      });
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          walletAddress: walletAddress.toString(),
+          civicId: id,
+          civicWalletAddress: civicWalletAddress.toString(),
+        })
+        .returning({
+          id: users.id,
+          civicId: users.civicId,
+          walletAddress: users.walletAddress,
+          civicWalletAddress: users.civicWalletAddress,
+        });
 
       return c.json({
         success: true,
-        data: user,
+        data: newUser,
       });
     } catch (err) {
       console.error('Auth user error:', err);
@@ -69,7 +84,14 @@ authRouter.openapi(
       request: {},
       responses: {
         200: openapiSuccessResponse({
-          schema: z.string(),
+          schema: z
+            .object({
+              id: z.string(),
+              civicId: z.string(),
+              walletAddress: z.string(),
+              civicWalletAddress: z.string(),
+            })
+            .nullish(),
         }),
       },
     })
@@ -82,17 +104,23 @@ authRouter.openapi(
         throw new NotFoundException('User not found');
       }
 
-      const userData = await db
-        .select()
+      const [userData] = await db
+        .select({
+          id: users.id,
+          civicId: users.civicId,
+          walletAddress: users.walletAddress,
+          civicWalletAddress: users.civicWalletAddress,
+        })
         .from(users)
         .where(eq(users.civicId, user.sub));
+
       if (!userData) {
         throw new NotFoundException('User not found');
       }
 
       return c.json({
         success: true,
-        data: user,
+        data: [user],
       });
     } catch (err) {
       console.error('Auth user error:', err);

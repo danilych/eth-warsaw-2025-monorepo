@@ -1,3 +1,4 @@
+import '@rainbow-me/rainbowkit/styles.css';
 // biome-ignore lint/correctness/noUnusedImports: <explanation>
 import React from 'react';
 import { Toaster } from '@/components/ui/toaster';
