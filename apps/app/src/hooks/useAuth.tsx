@@ -13,6 +13,10 @@ export const useAuth = () => {
           loginUrl:
             'https://eth-warsaw-2025-monorepo-production.up.railway.app/auth/auth',
           displayMode: 'redirect',
+          logging: {
+            enabled: true,
+            level: 'debug',
+          },
         });
         setAuthClient(client);
         const currentCivicUser = await client.getCurrentUser();
