@@ -143,7 +143,7 @@ questRouter.openapi(
           description: body.description,
           imageUrl: body.imageUrl || null,
           questType: body.questType,
-          rewardAmount: body.reward.toString(),
+          rewardAmount: body.rewardAmount.toString(),
           rewardTokenAddress: body.rewardTokenAddress,
           expiry: body.expiry,
           fromAddress: body.fromAddress || null,
@@ -245,7 +245,10 @@ questRouter.openapi(
 
       const [updatedQuest] = await db
         .update(quests)
-        .set(updateData)
+        .set({
+          ...updateData,
+          rewardAmount: updateData.rewardAmount?.toString(),
+        })
         .where(eq(quests.id, id))
         .returning();
 
@@ -419,7 +422,26 @@ questRouter.openapi(
     const { userId } = c.req.valid('param');
 
     const userQuestsWithQuests = await db
-      .select()
+      .select({
+        id: quests.id,
+        name: quests.name,
+        description: quests.description,
+        imageUrl: quests.imageUrl,
+        questType: quests.questType,
+        rewardAmount: quests.rewardAmount,
+        rewardTokenAddress: quests.rewardTokenAddress,
+        expiry: quests.expiry,
+        createdAt: quests.createdAt,
+        updatedAt: quests.updatedAt,
+        deletedAt: quests.deletedAt,
+        userStatus: {
+          id: userQuests.id,
+          userId: userQuests.userId,
+          status: userQuests.status,
+          createdAt: userQuests.createdAt,
+          updatedAt: userQuests.updatedAt,
+        },
+      })
       .from(quests)
       .leftJoin(
         userQuests,

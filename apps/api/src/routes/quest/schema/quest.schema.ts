@@ -8,17 +8,17 @@ export const QuestSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   description: z.string(),
-  imageUrl: z.string().nullable(),
+  imageUrl: z.string().nullish(),
   questType: QuestTypeSchema,
   rewardAmount: z.string(),
   tokenAddress: z.string(),
   expiry: z.number(),
-  fromAddress: z.string().nullable(),
-  amount: z.string().nullable(), // Using string to handle numeric precision
-  nftAddress: z.string().nullable(),
+  fromAddress: z.string().nullish(),
+  amount: z.string().nullish(), // Using string to handle numeric precision
+  nftAddress: z.string().nullish(),
   createdAt: z.string(),
-  updatedAt: z.string().nullable(),
-  deletedAt: z.string().nullable(),
+  updatedAt: z.string().nullish(),
+  deletedAt: z.string().nullish(),
 });
 
 export const UserQuestSchema = z.object({
@@ -27,23 +27,23 @@ export const UserQuestSchema = z.object({
   questId: z.string().uuid(),
   status: QuestStatusSchema,
   createdAt: z.string(),
-  updatedAt: z.string().nullable(),
+  updatedAt: z.string().nullish(),
 });
 
 export const QuestWithUserStatusSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   description: z.string(),
-  imageUrl: z.string().nullable(),
+  imageUrl: z.string().nullish(),
   questType: QuestTypeSchema,
-  fromAddress: z.string().nullable(),
-  amount: z.string().nullable(),
-  nftAddress: z.string().nullable(),
+  fromAddress: z.string().nullish(),
+  amount: z.string().nullish(),
+  nftAddress: z.string().nullish(),
   createdAt: z.string(),
-  updatedAt: z.string().nullable(),
-  deletedAt: z.string().nullable(),
-  reward: z.number(),
-  tokenAddress: z.string(),
+  updatedAt: z.string().nullish(),
+  deletedAt: z.string().nullish(),
+  rewardAmount: z.string().nullish(),
+  tokenAddress: z.string().nullish(),
   expiry: z.number(),
   userStatus: z
     .object({
@@ -51,9 +51,9 @@ export const QuestWithUserStatusSchema = z.object({
       userId: z.string().uuid(),
       status: QuestStatusSchema,
       createdAt: z.string(),
-      updatedAt: z.string().nullable(),
+      updatedAt: z.string().nullish(),
     })
-    .nullable(),
+    .nullish(),
 });
 
 export const CreateQuestSchema = z.object({
@@ -89,7 +89,7 @@ export const CreateQuestSchema = z.object({
     .min(1, 'To address is required')
     .max(42, 'To address must be less than 42 characters')
     .trim(),
-  reward: z.string().transform((val) => {
+  rewardAmount: z.string().transform((val) => {
     const ethAmount = Number.parseFloat(val);
     const weiAmount = ethAmount * 10 ** 18;
     return BigInt(Math.floor(weiAmount));
@@ -150,7 +150,7 @@ export const UpdateQuestSchema = z
       .string()
       .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
       .optional(),
-    reward: z
+    rewardAmount: z
       .string()
       .transform((val) => {
         const ethAmount = Number.parseFloat(val);
