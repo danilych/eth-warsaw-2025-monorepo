@@ -61,8 +61,6 @@ authRouter.openapi(
     try {
       const { code, state } = c.req.valid('query');
 
-      console.log({ code, state, req: c.req });
-
       const result = await c.get('civicAuth').handleCallback({
         code,
         state,
@@ -145,8 +143,6 @@ authRouter.openapi(
       const { id, walletAddress } = c.req.valid('query');
       const user = await c.get('civicAuth').getUser();
 
-      console.log(user, id);
-
       if (!user || user.id !== id) {
         throw new NotFoundException('User not found');
       }
@@ -157,6 +153,36 @@ authRouter.openapi(
         success: true,
         data: user,
       });
+    } catch (err) {
+      console.error('Auth user error:', err);
+      return c.json({ success: false, message: 'Failed to get user' }, 400);
+    }
+  }
+);
+
+authRouter.openapi(
+  withSerializer(
+    createRoute({
+      method: 'get',
+      path: '/auth/session',
+      tags: openApiTags,
+      security: [{ tmaJwtAuth: [], tmaSessionId: [], tmaUserTelegramId: [] }],
+      responses: {
+        200: openapiSuccessResponse({
+          schema: z.string(),
+        }),
+      },
+    })
+  ),
+  async (c) => {
+    try {
+      const user = await c.get('civicAuth').getUser();
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      return c.json(user);
     } catch (err) {
       console.error('Auth user error:', err);
       return c.json({ success: false, message: 'Failed to get user' }, 400);
