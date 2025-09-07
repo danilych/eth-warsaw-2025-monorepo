@@ -9,7 +9,7 @@ const client = await CivicAuth.create({
     level: 'debug',
   },
   backendEndpoints: {
-    user: 'https://eth-warsaw-2025-monorepo-production.up.railway.app/auth/auth/session',
+    user: '/auth/auth/session',
   },
   displayMode: 'iframe',
 });
