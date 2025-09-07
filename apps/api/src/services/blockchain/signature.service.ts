@@ -1,4 +1,10 @@
-import { Wallet, type TypedDataDomain, type TypedDataField } from 'ethers';
+import {
+  JsonRpcProvider,
+  Wallet,
+  type TypedDataDomain,
+  type TypedDataField,
+} from 'ethers';
+import { CONFIG } from '../../config';
 
 export namespace SignatureService {
   const DOMAIN: TypedDataDomain = {
@@ -26,7 +32,8 @@ export namespace SignatureService {
         throw new Error('Private key is required for signature generation');
       }
 
-      const wallet = new Wallet(signingKey);
+      const provider = new JsonRpcProvider(CONFIG.PARSING.ARBITRUM.RPC_URL);
+      const wallet = new Wallet(signingKey, provider);
 
       const message = {
         uuid,
