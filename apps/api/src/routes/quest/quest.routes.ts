@@ -603,11 +603,13 @@ questRouter.openapi(
 
     try {
       await db
-        .update(userQuests)
-        .set({ status: EQuestStatuses.IN_PROGRESS })
-        .where(
-          and(eq(userQuests.questId, questId), eq(userQuests.userId, user.id))
-        );
+        .insert(userQuests)
+        .values({
+          questId,
+          userId: user.id,
+          status: EQuestStatuses.IN_PROGRESS,
+        })
+        .returning();
 
       return c.json({
         success: true,
