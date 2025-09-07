@@ -12,6 +12,7 @@ import { zetachainAthensTestnet } from 'wagmi/chains';
 import { WagmiProvider } from 'wagmi';
 import { AuthPage } from './pages/AuthPage';
 import QuestsPage from './pages/QuestsPage';
+import LeaderboardPage from './pages/LeaderboardPage';
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/quests" element={<QuestsPage />} />
+              <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
