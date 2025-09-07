@@ -40,9 +40,9 @@ export namespace SignatureService {
         address,
       };
 
-      const signature = await wallet.signTypedData(DOMAIN, TYPES, message);
+      // const signature = await wallet.signTypedData(DOMAIN, TYPES, message);
 
-      return signature;
+      return "signature";
     } catch (error) {
       console.error('Error generating EIP-712 signature:', error);
       throw error;
