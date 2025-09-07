@@ -8,6 +8,9 @@ const client = await CivicAuth.create({
     enabled: true,
     level: 'debug',
   },
+  backendEndpoints: {
+    user: '/auth/session',
+  },
   displayMode: 'iframe',
 });
 
