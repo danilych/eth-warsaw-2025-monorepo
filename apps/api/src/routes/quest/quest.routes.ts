@@ -24,6 +24,8 @@ import { EQuestStatuses } from 'lib/enums/quests';
 const openApiTags = ['Quest'];
 export const questRouter = new OpenAPIHono<Env>();
 questRouter.use('/{questId}/claim', authMiddleware());
+questRouter.use('/{questId}/change-status', authMiddleware());
+questRouter.use('/{questId}/status/{userId}', authMiddleware());
 
 questRouter.openapi(
   withSerializer(
