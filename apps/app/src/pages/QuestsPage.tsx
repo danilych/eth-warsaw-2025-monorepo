@@ -134,7 +134,7 @@ const QuestsPage: React.FC = () => {
     };
 
     handleWalletConnection();
-  }, [address]);
+  }, [address, backendUser, isBackendUserLoading]);
 
   const handleStartQuest = async (questId: string) => {
     if (!user || !accessToken) return;
@@ -536,7 +536,7 @@ const QuestsPage: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
         {/* Gradient background */}
