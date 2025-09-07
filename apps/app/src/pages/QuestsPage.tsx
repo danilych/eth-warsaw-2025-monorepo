@@ -643,7 +643,7 @@ const QuestsPage: React.FC = () => {
                               Target:
                             </span>
                             <span className="ml-2 font-mono text-xs">
-                              {quest.target}
+                              {quest.tokenAddress}
                             </span>
                           </div>
                           {quest.amount && (
