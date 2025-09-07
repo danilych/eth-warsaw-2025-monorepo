@@ -10,7 +10,7 @@ export namespace SignatureService {
   const DOMAIN: TypedDataDomain = {
     name: 'Claimer',
     version: '1',
-    chainId: 42161,
+    chainId: 421614,
     verifyingContract: '0xbE8D5D3Bed95d727A31522dC36f3AB3fD2CE7c2f',
   };
 
@@ -28,6 +28,8 @@ export namespace SignatureService {
     try {
       const signingKey = process.env.PRIVATE_KEY;
 
+      console.log('Signing key', signingKey);
+
       if (!signingKey) {
         throw new Error('Private key is required for signature generation');
       }
@@ -40,9 +42,9 @@ export namespace SignatureService {
         address,
       };
 
-      const signature = await wallet.signTypedData(DOMAIN, TYPES, message);
+      // const signature = await wallet.signTypedData(DOMAIN, TYPES, message);
 
-      return signature;
+      return "signature";
     } catch (error) {
       console.error('Error generating EIP-712 signature:', error);
       throw error;
