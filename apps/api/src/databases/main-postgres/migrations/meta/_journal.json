@@ -22,6 +22,13 @@
       "when": 1757211956676,
       "tag": "0002_update-scheme",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1757216363288,
+      "tag": "0003_add_web3_wallet_to_user",
+      "breakpoints": true
     }
   ]
 }
