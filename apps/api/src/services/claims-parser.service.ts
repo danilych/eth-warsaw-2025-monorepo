@@ -31,13 +31,7 @@ export namespace ClaimsParserService {
         network: ENetworks.ARBITRUM,
         lastProcessedBlock: blockNumber,
       })
-      .onConflictDoUpdate({
-        target: blockchainParserState.network,
-        set: {
-          lastProcessedBlock: blockNumber,
-          updatedAt: new Date(),
-        },
-      });
+      .onConflictDoNothing();
   };
 
   export const parse = async () => {
