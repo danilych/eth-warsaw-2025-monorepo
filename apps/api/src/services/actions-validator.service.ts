@@ -5,7 +5,7 @@ import {
   userQuests,
   users,
 } from '../databases/main-postgres/schema';
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, isNull, sql, desc } from 'drizzle-orm';
 import { db } from '../databases/main-postgres';
 import { CONFIG } from '../config';
 import { EvmService } from './blockchain/evm.service';
@@ -19,7 +19,8 @@ export namespace ActionsValidatorService {
     const [block] = await db
       .select()
       .from(blockchainParserState)
-      .where(eq(blockchainParserState.network, ENetworks.ZETACHAIN));
+      .where(eq(blockchainParserState.network, ENetworks.ZETACHAIN))
+      .orderBy(desc(blockchainParserState.lastProcessedBlock));
     return block?.lastProcessedBlock ?? CONFIG.PARSING.ARBITRUM.START_BLOCK;
   };
 

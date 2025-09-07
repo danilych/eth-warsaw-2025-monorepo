@@ -7,7 +7,7 @@ import {
   userBalances,
   userClaims,
 } from '../databases/main-postgres/schema';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, sql, desc } from 'drizzle-orm';
 import { db, type DatabaseTypeBase } from '../databases/main-postgres';
 import { CONFIG } from '../config';
 import { EvmService } from './blockchain/evm.service';
@@ -20,7 +20,8 @@ export namespace ClaimsParserService {
     const [block] = await db
       .select()
       .from(blockchainParserState)
-      .where(eq(blockchainParserState.network, ENetworks.ARBITRUM));
+      .where(eq(blockchainParserState.network, ENetworks.ARBITRUM))
+      .orderBy(desc(blockchainParserState.lastProcessedBlock));
     return block?.lastProcessedBlock ?? CONFIG.PARSING.ARBITRUM.START_BLOCK;
   };
 
