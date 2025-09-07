@@ -38,42 +38,15 @@ export namespace SignatureService {
       const wallet = new Wallet(signingKey, provider);
 
       const message = {
-        uuid,
-        address,
+        questId: uuid,
+        user: address,
       };
 
-      // const signature = await wallet.signTypedData(DOMAIN, TYPES, message);
+      const signature = await wallet.signTypedData(DOMAIN, TYPES, message);
 
-      return "signature";
+      return signature;
     } catch (error) {
       console.error('Error generating EIP-712 signature:', error);
-      throw error;
-    }
-  };
-
-  export const verifyEIP712Signature = async (
-    signature: string,
-    questId: string,
-    user: string
-  ): Promise<string> => {
-    try {
-      const { verifyTypedData } = await import('ethers');
-
-      const message = {
-        questId,
-        user,
-      };
-
-      const recoveredAddress = verifyTypedData(
-        DOMAIN,
-        TYPES,
-        message,
-        signature
-      );
-
-      return recoveredAddress;
-    } catch (error) {
-      console.error('Error verifying EIP-712 signature:', error);
       throw error;
     }
   };
