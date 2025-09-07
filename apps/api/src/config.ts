@@ -4,7 +4,7 @@ export const CONFIG = {
     ARBITRUM: {
       RPC_URL: 'https://arbitrum-sepolia.gateway.tenderly.co',
       CLAIMER_CONTRACT_ADDRESS: '0xAd51FCfE8feEBDCd29CD8C91880D6AAe5051B19E',
-      START_BLOCK: 0,
+      START_BLOCK: 191725905,
       MAX_BLOCKS_TO_PROCESS: 500,
     },
     ZETACHAIN: {

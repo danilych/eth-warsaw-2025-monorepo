@@ -13,7 +13,7 @@ import LeaderboardPage from './pages/LeaderboardPage';
 import { AuthPage } from './pages/AuthPage';
 import { CivicAuthProvider } from '@civic/auth-web3/react';
 import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { zetachainAthensTestnet, arbitrumSepolia } from 'viem/chains';
+import { arbitrumSepolia } from 'viem/chains';
 import { WagmiProvider } from 'wagmi';
 
 const config = getDefaultConfig({
