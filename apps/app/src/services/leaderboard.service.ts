@@ -31,41 +31,57 @@ export const LeaderboardService = {
   /**
    * Get leaderboard data (top 25 users)
    */
-  async getLeaderboard(forceRefresh = false): Promise<LeaderboardData> {
-    const endpoint = forceRefresh ? '/leaderboard?forceRefresh=true' : '/leaderboard';
-    const response = await apiClient.get<LeaderboardData>(endpoint);
-    
+  async getLeaderboard(
+    forceRefresh: boolean,
+    accessToken: string
+  ): Promise<LeaderboardData> {
+    const endpoint = forceRefresh
+      ? '/leaderboard?forceRefresh=true'
+      : '/leaderboard';
+    const response = await apiClient.get<LeaderboardData>(endpoint, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
     if (!response.success || !response.data) {
       throw new Error('Failed to fetch leaderboard');
     }
-    
+
     return response.data;
   },
 
   /**
    * Get leaderboard statistics
    */
-  async getLeaderboardStats(): Promise<LeaderboardStats> {
-    const response = await apiClient.get<LeaderboardStats>('/leaderboard/stats');
-    
+  async getLeaderboardStats(accessToken: string): Promise<LeaderboardStats> {
+    const response = await apiClient.get<LeaderboardStats>(
+      '/leaderboard/stats',
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+
     if (!response.success || !response.data) {
       throw new Error('Failed to fetch leaderboard statistics');
     }
-    
+
     return response.data;
   },
 
   /**
    * Get current user's position in leaderboard
    */
-  async getCurrentUserPosition(): Promise<UserPosition | null> {
+  async getCurrentUserPosition(
+    accessToken: string
+  ): Promise<UserPosition | null> {
     try {
-      const response = await apiClient.get<UserPosition>('/leaderboard/me');
-      
+      const response = await apiClient.get<UserPosition>('/leaderboard/me', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
       if (!response.success || !response.data) {
         return null; // User not in top 25
       }
-      
+
       return response.data;
     } catch {
       // If user is not in leaderboard or not authenticated, return null
@@ -76,14 +92,22 @@ export const LeaderboardService = {
   /**
    * Get specific user's position in leaderboard
    */
-  async getUserPosition(userId: string): Promise<UserPosition | null> {
+  async getUserPosition(
+    userId: string,
+    accessToken: string
+  ): Promise<UserPosition | null> {
     try {
-      const response = await apiClient.get<UserPosition>(`/leaderboard/user/${userId}`);
-      
+      const response = await apiClient.get<UserPosition>(
+        `/leaderboard/user/${userId}`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+
       if (!response.success || !response.data) {
         return null; // User not in top 25
       }
-      
+
       return response.data;
     } catch {
       // If user is not in leaderboard, return null
@@ -96,7 +120,7 @@ export const LeaderboardService = {
    */
   formatBalance(balance: string): string {
     const balanceNumber = Number.parseFloat(balance);
-    const ethAmount = balanceNumber / (10 ** 18);
+    const ethAmount = balanceNumber / 10 ** 18;
     return ethAmount.toFixed(4);
   },
 
@@ -107,5 +131,5 @@ export const LeaderboardService = {
     const suffix = ['th', 'st', 'nd', 'rd'];
     const v = rank % 100;
     return rank + (suffix[(v - 20) % 10] || suffix[v] || suffix[0]);
-  }
+  },
 };

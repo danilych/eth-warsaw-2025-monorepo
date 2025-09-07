@@ -23,6 +23,7 @@ import type { Env } from '../../env';
 const openApiTags = ['Quest'];
 export const questRouter = new OpenAPIHono<Env>();
 questRouter.use('/{questId}/claim', authMiddleware());
+
 questRouter.openapi(
   withSerializer(
     createRoute({
@@ -488,16 +489,16 @@ questRouter.openapi(
     try {
       const { questId } = c.req.valid('param');
 
-      const baseUser = await c.get('civicAuth').getUser();
+      const baseUser = c.get('user');
 
-      if (!baseUser?.id) {
+      if (!baseUser?.sub) {
         return c.json({ success: false, message: 'User not found' }, 400);
       }
 
       const [user] = await db
         .select()
         .from(users)
-        .where(and(eq(users.civicId, baseUser.id)))
+        .where(and(eq(users.civicId, baseUser.sub)))
         .limit(1);
 
       if (!user) {

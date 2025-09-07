@@ -1,5 +1,6 @@
 import type { CivicAuth } from '@civic/auth/server';
 import type { HonoCookieStorage } from './services/cookies.service';
+import type { JWTPayload } from '@civic/auth-verify';
 
 interface Bindings {
   storage: HonoCookieStorage;
@@ -11,8 +12,7 @@ interface Variables {
 
   DATABASE_URL: string;
 
-  storage: HonoCookieStorage;
-  civicAuth: CivicAuth;
+  user: JWTPayload;
 }
 
 export type Env<WITH_ROOT_BINDINGS = false> = {

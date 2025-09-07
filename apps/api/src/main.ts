@@ -6,9 +6,6 @@ import {
 } from 'lib/exceptions/http';
 import { pick } from 'lib/utils/utils';
 import { router } from './routes';
-import { HonoCookieStorage } from './services/cookies.service';
-import { CivicAuth } from '@civic/auth/server';
-import { civicConfig } from './constants/civic';
 import type { Env } from './env';
 import { cors } from 'hono/cors';
 import './services/actions-validator.service';
@@ -32,13 +29,6 @@ app.use(
     exposeHeaders: ['Set-Cookie'],
   })
 );
-
-app.use('*', async (c, next) => {
-  const storage = new HonoCookieStorage(c);
-  c.set('storage', storage);
-  c.set('civicAuth', new CivicAuth(storage, civicConfig()));
-  return next();
-});
 
 // Exceptions
 app.notFound((c) => c.json({ success: false, message: 'No Such Route' }, 404));

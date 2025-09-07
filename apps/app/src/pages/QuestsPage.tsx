@@ -23,7 +23,7 @@ import { Trophy, Play, CheckCircle, Clock, Coins } from 'lucide-react';
 import { useUser } from '@civic/auth-web3/react';
 
 const QuestsPage: React.FC = () => {
-  const { user, isLoading, isAuthenticated } = useUser();
+  const { user, isLoading, isAuthenticated, accessToken } = useUser();
   const navigate = useNavigate();
   const [quests, setQuests] = useState<QuestWithUserStatus[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,11 +42,14 @@ const QuestsPage: React.FC = () => {
   // Fetch quests
   useEffect(() => {
     const fetchQuests = async () => {
-      if (!user) return;
+      if (!user || !accessToken) return;
 
       try {
         setLoading(true);
-        const questsData = await QuestService.getUserQuests(user.id);
+        const questsData = await QuestService.getUserQuests(
+          user.id,
+          accessToken
+        );
         setQuests(questsData);
       } catch (err) {
         setError('Failed to load quests. Please try again.');
@@ -57,7 +60,7 @@ const QuestsPage: React.FC = () => {
     };
 
     fetchQuests();
-  }, [user]);
+  }, [user, accessToken]);
 
   const handleStartQuest = async (questId: string) => {
     try {

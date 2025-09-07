@@ -28,7 +28,7 @@ import {
 import { useUser } from '@civic/auth-web3/react';
 
 const LeaderboardPage: React.FC = () => {
-  const { user, isAuthenticated, isLoading } = useUser();
+  const { user, isAuthenticated, isLoading, accessToken } = useUser();
   const navigate = useNavigate();
   const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null);
   const [stats, setStats] = useState<LeaderboardStats | null>(null);
@@ -49,6 +49,7 @@ const LeaderboardPage: React.FC = () => {
   const fetchLeaderboardData = useCallback(
     async (forceRefresh = false) => {
       try {
+        if (!accessToken) return;
         if (forceRefresh) {
           setRefreshing(true);
         } else {
@@ -56,10 +57,10 @@ const LeaderboardPage: React.FC = () => {
         }
 
         const [leaderboardData, statsData, userPos] = await Promise.all([
-          LeaderboardService.getLeaderboard(forceRefresh),
-          LeaderboardService.getLeaderboardStats(),
+          LeaderboardService.getLeaderboard(forceRefresh, accessToken),
+          LeaderboardService.getLeaderboardStats(accessToken),
           user
-            ? LeaderboardService.getCurrentUserPosition()
+            ? LeaderboardService.getCurrentUserPosition(accessToken)
             : Promise.resolve(null),
         ]);
 
@@ -75,7 +76,7 @@ const LeaderboardPage: React.FC = () => {
         setRefreshing(false);
       }
     },
-    [user]
+    [user, accessToken]
   );
 
   useEffect(() => {

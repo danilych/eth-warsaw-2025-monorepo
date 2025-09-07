@@ -260,15 +260,15 @@ leaderboardRouter.openapi(
   ),
   async (c) => {
     try {
-      const baseUser = await c.get('civicAuth').getUser();
-      if (!baseUser?.id) {
+      const baseUser = c.get('user');
+      if (!baseUser?.sub) {
         return c.json({ success: false, message: 'User not found' }, 401);
       }
 
       const [user] = await db
         .select()
         .from(users)
-        .where(and(eq(users.civicId, baseUser.id), isNull(users.deletedAt)))
+        .where(and(eq(users.civicId, baseUser.sub), isNull(users.deletedAt)))
         .limit(1);
 
       if (!user) {
