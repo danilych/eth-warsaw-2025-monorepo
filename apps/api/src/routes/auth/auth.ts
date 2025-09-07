@@ -120,7 +120,7 @@ authRouter.openapi(
 
       return c.json({
         success: true,
-        data: [user],
+        data: userData,
       });
     } catch (err) {
       console.error('Auth user error:', err);
