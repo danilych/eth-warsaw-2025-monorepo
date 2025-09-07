@@ -560,7 +560,6 @@ questRouter.openapi(
       request: {
         params: z.object({
           questId: z.string().uuid('Invalid quest ID format'),
-          userId: z.string().uuid('Invalid user ID format'),
         }),
       },
       responses: {
@@ -582,14 +581,30 @@ questRouter.openapi(
     })
   ),
   async (c) => {
-    const { questId, userId } = c.req.valid('param');
+    const { questId } = c.req.valid('param');
+
+    const baseUser = c.get('user');
+
+    if (!baseUser?.sub) {
+      return c.json({ success: false, message: 'User not found' }, 400);
+    }
+
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.civicId, baseUser.sub)))
+      .limit(1);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     try {
       await db
         .update(userQuests)
         .set({ status: EQuestStatuses.IN_PROGRESS })
         .where(
-          and(eq(userQuests.questId, questId), eq(userQuests.userId, userId))
+          and(eq(userQuests.questId, questId), eq(userQuests.userId, user.id))
         );
 
       return c.json({
@@ -617,7 +632,6 @@ questRouter.openapi(
       request: {
         params: z.object({
           questId: z.string().uuid('Invalid quest ID format'),
-          userId: z.string().uuid('Invalid user ID format'),
         }),
       },
       responses: {
@@ -639,14 +653,30 @@ questRouter.openapi(
     })
   ),
   async (c) => {
-    const { questId, userId } = c.req.valid('param');
+    const { questId } = c.req.valid('param');
+
+    const baseUser = c.get('user');
+
+    if (!baseUser?.sub) {
+      return c.json({ success: false, message: 'User not found' }, 400);
+    }
+
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.civicId, baseUser.sub)))
+      .limit(1);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     try {
       const [userQuest] = await db
         .select()
         .from(userQuests)
         .where(
-          and(eq(userQuests.questId, questId), eq(userQuests.userId, userId))
+          and(eq(userQuests.questId, questId), eq(userQuests.userId, user.id))
         )
         .limit(1);
 
