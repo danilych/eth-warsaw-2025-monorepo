@@ -84,7 +84,7 @@ export namespace ActionsValidatorService {
         console.log(
           '✅ [ActionsValidator] No new blocks to process - blockchain is up to date'
         );
-        return setTimeout(parse, 5000);
+        return;
       }
 
       // Check if we need to limit the batch size
@@ -132,7 +132,7 @@ export namespace ActionsValidatorService {
         console.log(
           `⏱️  [ActionsValidator] Validation cycle completed in ${totalDuration}ms (no events to process)`
         );
-        return setTimeout(parse, 5000);
+        return;
       }
 
       console.log(
@@ -165,7 +165,7 @@ export namespace ActionsValidatorService {
         console.log(
           `⏱️  [ActionsValidator] Validation cycle completed in ${totalDuration}ms (no events to process)`
         );
-        return setTimeout(parse, 5000);
+        return;
       }
 
       // Process blockchain events for quest validation
@@ -323,9 +323,9 @@ export namespace ActionsValidatorService {
         - Network: ${ENetworks.ZETACHAIN}`);
     } finally {
       console.log(
-        '⏰ [ActionsValidator] Scheduling next validation cycle in 5 seconds...'
+        '⏰ [ActionsValidator] Scheduling next validation cycle in 10 seconds...'
       );
-      setTimeout(parse, 5000);
+      setTimeout(parse, 10_000);
     }
   };
 

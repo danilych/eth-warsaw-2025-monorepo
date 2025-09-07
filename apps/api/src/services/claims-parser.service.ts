@@ -61,7 +61,7 @@ export namespace ClaimsParserService {
         console.log(
           '✅ [ClaimsParser] No new blocks to process - blockchain is up to date'
         );
-        return setTimeout(parse, 5000);
+        return;
       }
 
       // Check if we need to limit the batch size
@@ -112,7 +112,7 @@ export namespace ClaimsParserService {
         console.log(
           `⏱️  [ClaimsParser] Parse cycle completed in ${totalDuration}ms (no events to process)`
         );
-        return setTimeout(parse, 5000);
+        return;
       }
 
       // Parse claim events from smart contract
@@ -212,9 +212,9 @@ export namespace ClaimsParserService {
         - Network: ${ENetworks.ARBITRUM}`);
     } finally {
       console.log(
-        '⏰ [ClaimsParser] Scheduling next parse cycle in 5 seconds...'
+        '⏰ [ClaimsParser] Scheduling next parse cycle in 10 seconds...'
       );
-      setTimeout(parse, 5000);
+      setTimeout(parse, 10_000);
     }
   };
 
