@@ -1,5 +1,5 @@
 // biome-ignore lint/style/useImportType: <explanation>
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -16,10 +16,13 @@ export const AuthPage: React.FC = () => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  if (user && !isLoading) {
-    navigate('/quests');
-    return;
-  }
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    if (user && !isLoading) {
+      navigate('/quests');
+      return;
+    }
+  }, [user, isLoading]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
