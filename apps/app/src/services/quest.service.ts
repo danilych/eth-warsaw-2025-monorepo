@@ -78,6 +78,8 @@ export const QuestService = {
         }) as bigint;
 
         quest.reward = Number(predictedReward);
+
+        console.log('Predicted reward for quest', quest.id, 'is', quest.reward);
       } catch (error) {
         console.error(`Failed to predict rewards for quest ${quest.id}:`, error);
         quest.reward = 0;
