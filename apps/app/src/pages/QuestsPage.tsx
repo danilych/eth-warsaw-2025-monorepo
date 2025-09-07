@@ -597,9 +597,19 @@ const QuestsPage: React.FC = () => {
 
                       {/* Quest Info */}
                       <div className="flex-1 text-left">
-                        <CardTitle className="text-lg mb-1">
-                          {quest.name}
-                        </CardTitle>
+                        <div className="flex items-center gap-2 mb-1">
+                          <CardTitle className="text-lg">
+                            {quest.name}
+                          </CardTitle>
+                          {quest.isDaily && (
+                            <Badge
+                              variant="secondary"
+                              className="bg-neon-purple/20 text-neon-purple border-neon-purple/30 text-xs"
+                            >
+                              Daily
+                            </Badge>
+                          )}
+                        </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Coins className="w-4 h-4 text-quest-gold" />

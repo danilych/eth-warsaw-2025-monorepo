@@ -296,6 +296,7 @@ questRouter.openapi(
         tokenAddress: quests.tokenAddress,
         nftAddress: quests.nftAddress,
         expiry: quests.expiry,
+        isDaily: quests.isDaily,
         createdAt: quests.createdAt,
         updatedAt: quests.updatedAt,
         deletedAt: quests.deletedAt,

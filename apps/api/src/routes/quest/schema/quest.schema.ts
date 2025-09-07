@@ -16,6 +16,7 @@ export const QuestSchema = z.object({
   fromAddress: z.string().nullish(),
   amount: z.string().nullish(), // Using string to handle numeric precision
   nftAddress: z.string().nullish(),
+  isDaily: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string().nullish(),
   deletedAt: z.string().nullish(),
@@ -45,6 +46,7 @@ export const QuestWithUserStatusSchema = z.object({
   rewardAmount: z.string().nullish(),
   tokenAddress: z.string().nullish(),
   expiry: z.number(),
+  isDaily: z.boolean().nullish(),
   userStatus: z
     .object({
       id: z.string().uuid(),
@@ -107,6 +109,7 @@ export const CreateQuestSchema = z.object({
     .string()
     .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
     .optional(),
+  isDaily: z.boolean().default(false),
 });
 
 export const UpdateQuestSchema = z
@@ -167,6 +170,7 @@ export const UpdateQuestSchema = z
       .int()
       .min(0, 'Expiry must be a non-negative integer')
       .optional(),
+    isDaily: z.boolean().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: 'At least one field must be provided for update',

@@ -1,0 +1,1 @@
+ALTER TABLE "quests" ADD COLUMN "is_daily" boolean DEFAULT false NOT NULL;

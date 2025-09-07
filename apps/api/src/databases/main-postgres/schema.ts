@@ -8,6 +8,7 @@ import {
   text,
   integer,
   numeric,
+  boolean,
 } from 'drizzle-orm/pg-core';
 import { ENetworks } from 'lib/enums/networks';
 import { EQuestTypes, EQuestStatuses } from 'lib/enums/quests';
@@ -61,6 +62,7 @@ export const quests = pgTable('quests', {
   amount: numeric('amount'),
   tokenAddress: text('token_address'),
   nftAddress: text('nft_address'),
+  isDaily: boolean('is_daily').notNull().default(false),
 });
 
 export const userQuests = pgTable('user_quests', {

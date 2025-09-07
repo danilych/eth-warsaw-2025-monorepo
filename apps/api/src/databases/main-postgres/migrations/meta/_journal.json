@@ -29,6 +29,13 @@
       "when": 1757216363288,
       "tag": "0003_add_web3_wallet_to_user",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1757223868260,
+      "tag": "0004_add-daily",
+      "breakpoints": true
     }
   ]
 }

@@ -26,6 +26,7 @@ export interface Quest {
   fromAddress: string | null;
   amount: string | null;
   nftAddress: string | null;
+  isDaily: boolean;
   createdAt: string;
   updatedAt: string | null;
   deletedAt: string | null;
