@@ -293,6 +293,8 @@ questRouter.openapi(
         questType: quests.questType,
         rewardAmount: quests.rewardAmount,
         rewardTokenAddress: quests.rewardTokenAddress,
+        tokenAddress: quests.tokenAddress,
+        nftAddress: quests.nftAddress,
         expiry: quests.expiry,
         createdAt: quests.createdAt,
         updatedAt: quests.updatedAt,
