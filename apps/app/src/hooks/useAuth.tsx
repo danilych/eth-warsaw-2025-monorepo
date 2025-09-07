@@ -15,6 +15,10 @@ export const useAuth = () => {
           displayMode: 'redirect',
         });
         setAuthClient(client);
+        const currentCivicUser = await client.getCurrentUser();
+        if (currentCivicUser) {
+          setUser(currentCivicUser);
+        }
       } catch (error) {
         console.error('Failed to initialize Civic Auth:', error);
       }
