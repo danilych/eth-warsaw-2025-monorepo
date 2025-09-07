@@ -109,6 +109,7 @@ export namespace ActionsValidatorService {
       const targetContractAddresses = Array.from(
         targetContractAddressesMap.keys()
       );
+
       const contractLookupDuration = Date.now() - contractLookupStartTime;
 
       console.log(`📋 [ActionsValidator] Target contracts loaded:
@@ -117,6 +118,19 @@ export namespace ActionsValidatorService {
         - Contract addresses: ${targetContractAddresses
           .slice(0, 3)
           .join(', ')}${targetContractAddresses.length > 3 ? '...' : ''}`);
+
+      if (targetContractAddresses.length === 0) {
+        console.log('No target contract addresses found');
+        await saveLastProcessedBlockNumber(endBlock);
+        console.log(
+          `💾 [ActionsValidator] Updated last processed block to: ${endBlock}`
+        );
+        const totalDuration = Date.now() - parseStartTime;
+        console.log(
+          `⏱️  [ActionsValidator] Validation cycle completed in ${totalDuration}ms (no events to process)`
+        );
+        return setTimeout(parse, 5000);
+      }
 
       console.log(
         `🔎 [ActionsValidator] Fetching logs for block range ${startBlock} → ${endBlock}...`

@@ -96,7 +96,7 @@ export namespace ClaimsParserService {
 
       const logs = await EvmService.getLogsInBlockRange(
         provider,
-        [CONFIG.PARSING.ARBITRUM.EVENT_SIGNATURE],
+        [CONFIG.PARSING.ARBITRUM.CLAIMER_CONTRACT_ADDRESS],
         startBlock,
         endBlock
       );
@@ -104,8 +104,7 @@ export namespace ClaimsParserService {
       const logFetchDuration = Date.now() - logFetchStartTime;
       console.log(`📋 [ClaimsParser] Log fetch completed:
         - Found ${logs.length} events
-        - Fetch duration: ${logFetchDuration}ms
-        - Event signature: ${CONFIG.PARSING.ARBITRUM.EVENT_SIGNATURE}`);
+        - Fetch duration: ${logFetchDuration}ms`);
 
       if (logs.length === 0) {
         console.log(
