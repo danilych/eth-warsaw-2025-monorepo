@@ -12,7 +12,7 @@ export const useAuth = () => {
         const client = await CivicAuth.create({
           loginUrl:
             'https://eth-warsaw-2025-monorepo-production.up.railway.app/auth/auth',
-          displayMode: 'redirect',
+          displayMode: 'iframe',
         });
         setAuthClient(client);
         const currentCivicUser = await client.getCurrentUser();
