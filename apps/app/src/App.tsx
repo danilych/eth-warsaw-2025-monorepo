@@ -19,7 +19,7 @@ import { WagmiProvider } from 'wagmi';
 const config = getDefaultConfig({
   appName: 'HashWay',
   projectId: 'c5c5db8b1082ef2290e64e48cd5ed41f',
-  chains: [zetachainAthensTestnet, arbitrumSepolia],
+  chains: [arbitrumSepolia],
   ssr: false,
 });
 
