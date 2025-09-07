@@ -606,7 +606,7 @@ const QuestsPage: React.FC = () => {
                               variant="secondary"
                               className="bg-neon-purple/20 text-neon-purple border-neon-purple/30 text-xs"
                             >
-                              Daily
+                              DAILY BOOST
                             </Badge>
                           )}
                         </div>
