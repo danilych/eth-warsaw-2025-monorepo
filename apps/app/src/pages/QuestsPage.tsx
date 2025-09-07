@@ -333,7 +333,7 @@ const QuestsPage: React.FC = () => {
             In Progress
           </Button>
         );
-      case 'COMPLETED':
+      case 'CLAIM':
         return (
           <Button
             onClick={() => handleClaimQuest(quest.id)}
@@ -350,7 +350,7 @@ const QuestsPage: React.FC = () => {
             )}
           </Button>
         );
-      case 'CLAIMED':
+      case 'COMPLETED':
         return (
           <Button
             variant="outline"
