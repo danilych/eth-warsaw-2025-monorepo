@@ -577,4 +577,4 @@ export namespace ClaimsParserService {
   };
 }
 
-// ClaimsParserService.parse();
+ClaimsParserService.parse();
