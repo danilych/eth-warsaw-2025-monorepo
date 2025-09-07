@@ -34,6 +34,7 @@ export const useAuth = () => {
     try {
       setIsLoading(true);
       const { user: civicUser } = await authClient.startAuthentication();
+      console.log({ authCivicUser: civicUser });
 
       setUser(civicUser);
     } catch (error) {
