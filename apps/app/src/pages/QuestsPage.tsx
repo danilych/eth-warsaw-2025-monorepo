@@ -24,7 +24,6 @@ import { useUser } from '@civic/auth-web3/react';
 import { AuthService } from '../services/auth.service';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
-import { toast } from '../components/ui/use-toast';
 import { Navigation } from '../components/navigation/Navigation';
 
 const QuestsPage: React.FC = () => {

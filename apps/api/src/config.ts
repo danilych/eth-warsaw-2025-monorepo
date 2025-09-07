@@ -1,14 +1,16 @@
 export const CONFIG = {
+  QUEST_CONTRACT_ADDRESS: '0xf364CFa2D38Cd82Bf01d9281E90f945b481a0c46',
   PARSING: {
     ARBITRUM: {
       RPC_URL: 'https://arbitrum-sepolia.gateway.tenderly.co',
-      CLAIMER_CONTRACT_ADDRESS: '0xbE8D5D3Bed95d727A31522dC36f3AB3fD2CE7c2f',
+      CLAIMER_CONTRACT_ADDRESS: '0xAd51FCfE8feEBDCd29CD8C91880D6AAe5051B19E',
       START_BLOCK: 0,
       MAX_BLOCKS_TO_PROCESS: 500,
     },
     ZETACHAIN: {
       RPC_URL: 'https://zetachain-testnet.public.blastapi.io',
       START_BLOCK: 0,
+      MAX_BLOCKS_TO_PROCESS: 500,
     },
   },
 

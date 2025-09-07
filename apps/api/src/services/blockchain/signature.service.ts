@@ -11,11 +11,11 @@ export namespace SignatureService {
     name: 'Claimer',
     version: '1',
     chainId: 421614,
-    verifyingContract: '0xbE8D5D3Bed95d727A31522dC36f3AB3fD2CE7c2f',
+    verifyingContract: '0xAd51FCfE8feEBDCd29CD8C91880D6AAe5051B19E',
   };
 
   const TYPES: Record<string, TypedDataField[]> = {
-    Claim: [
+    ClaimRequest: [
       { name: 'questId', type: 'string' },
       { name: 'user', type: 'address' },
     ],

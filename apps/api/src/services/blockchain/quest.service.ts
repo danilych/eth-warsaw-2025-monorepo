@@ -2,14 +2,15 @@ import { Contract, Wallet } from 'ethers';
 import { ENetworks } from 'lib/enums/networks';
 import { EvmService } from './evm.service';
 import { QUEST_CONTRACT } from '../../abis/quest.abi';
+import { CONFIG } from '../../config';
 
 export namespace QuestService {
   export const getReadContract = () => {
     const provider = EvmService.getJsonRpcProvider(ENetworks.ARBITRUM);
 
     const readContract = new Contract(
-      QUEST_CONTRACT.address,
-      QUEST_CONTRACT.abi,
+      CONFIG.QUEST_CONTRACT_ADDRESS,
+      QUEST_CONTRACT,
       provider
     );
 
@@ -28,8 +29,8 @@ export namespace QuestService {
 
     const wallet = new Wallet(privateKey, provider);
     const writeContract = new Contract(
-      QUEST_CONTRACT.address,
-      QUEST_CONTRACT.abi,
+      CONFIG.QUEST_CONTRACT_ADDRESS,
+      QUEST_CONTRACT,
       wallet
     );
 

@@ -182,6 +182,13 @@ export const CLAIMER_CONTRACT = [
     type: 'function',
   },
   {
+    inputs: [],
+    name: 'DOMAIN_SEPARATOR',
+    outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
     inputs: [
       { internalType: 'string', name: 'questId', type: 'string' },
       { internalType: 'bytes', name: 'signature', type: 'bytes' },

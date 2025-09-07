@@ -66,29 +66,36 @@ export const QuestService = {
       transport: http(),
     });
 
-    const claimerContractAddress = '0xbE8D5D3Bed95d727A31522dC36f3AB3fD2CE7c2f';
+    const claimerContractAddress = '0xAd51FCfE8feEBDCd29CD8C91880D6AAe5051B19E';
 
     for (const quest of response.data) {
       console.log('Processing quest', quest);
       try {
-        const predictedReward = await publicClient.readContract({
+        const predictedReward = (await publicClient.readContract({
           address: claimerContractAddress,
           abi: CLAIMER_ABI,
           functionName: 'predictRewards',
           args: [quest.id],
-        }) as bigint;
+        })) as bigint;
 
-        console.log('Predicted reward for quest from contract', quest.id, 'is', predictedReward);
+        console.log(
+          'Predicted reward for quest from contract',
+          quest.id,
+          'is',
+          predictedReward
+        );
 
         quest.reward = Number(predictedReward);
 
         console.log('Predicted reward for quest', quest.id, 'is', quest.reward);
       } catch (error) {
-        console.error(`Failed to predict rewards for quest ${quest.id}:`, error);
+        console.error(
+          `Failed to predict rewards for quest ${quest.id}:`,
+          error
+        );
         quest.reward = 0;
       }
     }
-
 
     return response.data;
   },
@@ -189,7 +196,7 @@ export const QuestService = {
       throw new Error('No wallet account found');
     }
 
-    const claimerContractAddress = '0xbE8D5D3Bed95d727A31522dC36f3AB3fD2CE7c2f';
+    const claimerContractAddress = '0xAd51FCfE8feEBDCd29CD8C91880D6AAe5051B19E';
 
     try {
       const hash = await walletClient.writeContract({
@@ -212,7 +219,6 @@ export const QuestService = {
       } else {
         throw new Error('Transaction failed');
       }
-
     } catch (contractError) {
       console.error('Contract interaction failed:', contractError);
       throw new Error('Failed to claim reward on blockchain');
