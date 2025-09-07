@@ -28,21 +28,22 @@ export const useAuth = () => {
     initAuth();
   }, []);
 
-  const signIn = async () => {
+  const signIn = useCallback(async () => {
     if (!authClient) return;
 
     try {
       setIsLoading(true);
-      const { user: civicUser } = await authClient.startAuthentication();
+      const { user: civicUser, signalText } =
+        await authClient.startAuthentication();
       console.log({ authCivicUser: civicUser });
-
+      console.log({ signalText });
       setUser(civicUser);
     } catch (error) {
       console.error('Sign in failed:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [authClient]);
 
   const signOut = useCallback(async () => {
     if (!authClient) return;
