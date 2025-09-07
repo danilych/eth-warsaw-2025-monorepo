@@ -25,6 +25,7 @@ import { AuthService } from '../services/auth.service';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { toast } from '../components/ui/use-toast';
+import { Navigation } from '../components/navigation/Navigation';
 
 const QuestsPage: React.FC = () => {
   const { user, isLoading, accessToken } = useUser();
@@ -532,6 +533,15 @@ const QuestsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      {user && backendUser && (
+        <div className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container mx-auto px-4 py-4 flex justify-center">
+            <Navigation />
+          </div>
+        </div>
+      )}
+      
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
         {/* Gradient background */}

@@ -26,6 +26,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { useUser } from '@civic/auth-web3/react';
+import { Navigation } from '../components/navigation/Navigation';
 
 const LeaderboardPage: React.FC = () => {
   const { user, isAuthenticated, isLoading, accessToken } = useUser();
@@ -38,12 +39,12 @@ const LeaderboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Redirect to auth if not logged in
-  //   useEffect(() => {
-  //     if (!user) {
-  //       navigate('/auth');
-  //       return;
-  //     }
-  //   }, [user, navigate]);
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+  }, [user, navigate]);
 
   // Fetch leaderboard data
   const fetchLeaderboardData = useCallback(
@@ -80,9 +81,9 @@ const LeaderboardPage: React.FC = () => {
   );
 
   useEffect(() => {
-    // if (user) {
-    fetchLeaderboardData();
-    // }
+    if (user) {
+      fetchLeaderboardData();
+    }
   }, [user, fetchLeaderboardData]);
 
   const handleRefresh = () => {
@@ -143,6 +144,15 @@ const LeaderboardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      {user && (
+        <div className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container mx-auto px-4 py-4 flex justify-center">
+            <Navigation />
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
         {/* Gradient background */}
