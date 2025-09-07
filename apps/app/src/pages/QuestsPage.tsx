@@ -68,6 +68,8 @@ const QuestsPage: React.FC = () => {
   const handleStartQuest = async (questId: string) => {
     if (!user || !accessToken) return;
 
+    console.log(user);
+
     try {
       setStartingQuest(questId);
 
