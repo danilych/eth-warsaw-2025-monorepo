@@ -1,6 +1,6 @@
 // Base API configuration
 const API_BASE_URL =
-  'http://eth-warsaw-2025-monorepo-production.up.railway.app';
+  'https://eth-warsaw-2025-monorepo-production.up.railway.app';
 
 export class ApiError extends Error {
   constructor(
