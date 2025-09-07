@@ -1,0 +1,1 @@
+ALTER TABLE "quests" ALTER COLUMN "reward_amount" SET DATA TYPE text;

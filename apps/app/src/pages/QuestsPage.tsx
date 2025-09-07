@@ -32,14 +32,12 @@ const QuestsPage: React.FC = () => {
 
   // Redirect to auth if not logged in
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
-    console.log('user', user);
-    console.log('isLoading', isLoading);
-    if (!user && !isLoading) {
-      navigate('/auth');
-      return;
-    }
-  }, [user, isLoading]);
+  //   useEffect(() => {
+  //     if (!user && !isLoading) {
+  //       navigate('/auth');
+  //       return;
+  //     }
+  //   }, [user, isLoading]);
 
   // Fetch quests
   useEffect(() => {
@@ -190,10 +188,6 @@ const QuestsPage: React.FC = () => {
         return null;
     }
   };
-
-  if (!user) {
-    return null; // Will redirect to auth
-  }
 
   if (loading) {
     return (

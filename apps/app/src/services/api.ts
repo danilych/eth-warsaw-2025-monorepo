@@ -1,6 +1,5 @@
 // Base API configuration
-const API_BASE_URL =
-  'https://eth-warsaw-2025-monorepo-production.up.railway.app';
+const API_BASE_URL = 'http://localhost:3000';
 
 export class ApiError extends Error {
   constructor(

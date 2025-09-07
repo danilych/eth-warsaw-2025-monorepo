@@ -51,8 +51,8 @@ export namespace QuestService {
     id: string;
     reward: string;
     rewardToken: string;
-    expiry: string;
-    createdAt: string;
+    expiry: number;
+    startsAt: number;
   }) => {
     try {
       const writeContract = getWriteContract();
@@ -61,7 +61,7 @@ export namespace QuestService {
         data.reward,
         data.rewardToken,
         data.expiry,
-        data.createdAt
+        data.startsAt
       );
       return quest;
     } catch (error) {

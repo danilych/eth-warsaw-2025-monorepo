@@ -15,6 +15,13 @@
       "when": 1757206399607,
       "tag": "0001_remove_unique_index_on_blockhain_state",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1757211956676,
+      "tag": "0002_update-scheme",
+      "breakpoints": true
     }
   ]
 }

@@ -52,7 +52,7 @@ export const quests = pgTable('quests', {
   description: text('description').notNull(),
   imageUrl: text('image_url'),
   questType: questTypeEnum('quest_type').notNull(),
-  rewardAmount: bigint('reward_amount', { mode: 'bigint' }).notNull(),
+  rewardAmount: text('reward_amount').notNull(),
   rewardTokenAddress: text('reward_token_address').notNull(),
   expiry: integer('expiry').notNull().default(0),
   fromAddress: text('from_address'),

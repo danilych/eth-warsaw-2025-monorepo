@@ -153,22 +153,26 @@ questRouter.openapi(
         })
         .returning();
 
-      await QuestService.createQuest({
-        id: newQuest.id,
-        reward: body.reward.toString(),
-        rewardToken: body.rewardTokenAddress,
-        expiry: body.expiry.toString(),
-        createdAt: new Date().toISOString(),
-      });
+      // await QuestService.createQuest({
+      //   id: newQuest.id,
+      //   reward: body.reward.toString(),
+      //   rewardToken: body.rewardTokenAddress,
+      //   expiry: body.expiry,
+      //   startsAt: Math.floor(Date.now() / 1000),
+      // });
 
       return c.json(
         {
           success: true,
-          data: newQuest,
+          data: {
+            ...newQuest,
+            rewardAmount: newQuest.rewardAmount.toString(),
+          },
         },
         201
       );
-    } catch {
+    } catch (error) {
+      console.error('Error creating quest:', error);
       return c.json({ success: false, message: 'Failed to create quest' }, 400);
     }
   }
