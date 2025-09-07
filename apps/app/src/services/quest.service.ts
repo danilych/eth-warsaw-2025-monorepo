@@ -69,6 +69,7 @@ export const QuestService = {
     const claimerContractAddress = '0xbE8D5D3Bed95d727A31522dC36f3AB3fD2CE7c2f';
 
     for (const quest of response.data) {
+      console.log('Processing quest', quest);
       try {
         const predictedReward = await publicClient.readContract({
           address: claimerContractAddress,
