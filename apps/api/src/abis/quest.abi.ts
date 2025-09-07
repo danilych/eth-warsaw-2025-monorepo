@@ -1,5 +1,5 @@
 export const QUEST_CONTRACT = {
-  address: '0xdCa1f9cb6e3E364C1E61CD55D6ff673454604E1e',
+  address: '0x89eE43418e49d19ff902Ac08A7cF6DaA88Bb8F19',
   abi: [
     {
       inputs: [

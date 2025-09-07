@@ -9,6 +9,11 @@ export const CLAIMER_CONTRACT = [
         name: 'questStorage_',
         type: 'address',
       },
+      {
+        internalType: 'contract IRewardProcessor',
+        name: 'rewardProcessor_',
+        type: 'address',
+      },
     ],
     stateMutability: 'nonpayable',
     type: 'constructor',
@@ -149,6 +154,19 @@ export const CLAIMER_CONTRACT = [
       {
         indexed: true,
         internalType: 'address',
+        name: 'rewardProcessor',
+        type: 'address',
+      },
+    ],
+    name: 'RewardProcessorUpdated',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
         name: 'vault',
         type: 'address',
       },
@@ -203,6 +221,13 @@ export const CLAIMER_CONTRACT = [
     type: 'function',
   },
   {
+    inputs: [{ internalType: 'string', name: 'questId', type: 'string' }],
+    name: 'predictRewards',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
     inputs: [],
     name: 'questStorage',
     outputs: [
@@ -216,6 +241,15 @@ export const CLAIMER_CONTRACT = [
     name: 'renounceOwnership',
     outputs: [],
     stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'rewardProcessor',
+    outputs: [
+      { internalType: 'contract IRewardProcessor', name: '', type: 'address' },
+    ],
+    stateMutability: 'view',
     type: 'function',
   },
   {
@@ -241,6 +275,19 @@ export const CLAIMER_CONTRACT = [
       },
     ],
     name: 'updateQuestStorage',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'contract IRewardProcessor',
+        name: 'rewardProcessor_',
+        type: 'address',
+      },
+    ],
+    name: 'updateRewardProcessor',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
