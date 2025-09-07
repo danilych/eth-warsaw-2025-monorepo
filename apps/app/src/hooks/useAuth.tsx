@@ -1,24 +1,23 @@
 import { type AuthResult, CivicAuth } from '@civic/auth/vanillajs';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+
+const client = await CivicAuth.create({
+  loginUrl:
+    'https://eth-warsaw-2025-monorepo-production.up.railway.app/auth/auth',
+  logging: {
+    enabled: true,
+    level: 'debug',
+  },
+  displayMode: 'iframe',
+});
 
 export const useAuth = () => {
   const [user, setUser] = useState<AuthResult['user'] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [authClient, setAuthClient] = useState<CivicAuth | null>(null);
 
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const client = await CivicAuth.create({
-          loginUrl:
-            'https://eth-warsaw-2025-monorepo-production.up.railway.app/auth/auth',
-          logging: {
-            enabled: true,
-            level: 'debug',
-          },
-          displayMode: 'iframe',
-        });
-        setAuthClient(client);
         const currentCivicUser = await client.getCurrentUser();
         console.log('currentCivicUser', currentCivicUser);
         if (currentCivicUser) {
@@ -32,13 +31,11 @@ export const useAuth = () => {
     initAuth();
   }, []);
 
-  const signIn = useCallback(async () => {
-    if (!authClient) return;
-
+  const signIn = async () => {
     try {
       setIsLoading(true);
       const { user: civicUser, signalText } =
-        await authClient.startAuthentication();
+        await client.startAuthentication();
       console.log({ authCivicUser: civicUser });
       console.log({ signalText });
       setUser(civicUser);
@@ -47,17 +44,15 @@ export const useAuth = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [authClient]);
+  };
 
-  const signOut = useCallback(async () => {
-    if (!authClient) return;
-
+  const signOut = async () => {
     try {
-      await authClient.logout();
+      await client.logout();
       setUser(null);
     } catch (error) {
       console.error('Sign out failed:', error);
     }
-  }, [authClient]);
+  };
   return { user, isLoading, signIn, signOut };
 };
