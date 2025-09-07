@@ -53,9 +53,16 @@ export namespace ActionsValidatorService {
   };
 
   export const parse = async () => {
+    const parseStartTime = Date.now();
+    console.log(
+      '🔍 [ActionsValidator] Starting blockchain validation cycle...'
+    );
+
     try {
+      console.log('🔗 [ActionsValidator] Connecting to ZetaChain provider...');
       const provider = EvmService.getJsonRpcProvider(ENetworks.ZETACHAIN);
 
+      console.log('📊 [ActionsValidator] Fetching block information...');
       const [lastProcessedBlockNumber, currentBlockNumber] = await Promise.all([
         getLastProcessedBlockNumber(),
         EvmService.getCurrentBlockNumber(provider),
@@ -64,22 +71,58 @@ export namespace ActionsValidatorService {
       let endBlock = currentBlockNumber - 1;
       const startBlock = lastProcessedBlockNumber;
 
+      console.log(`📈 [ActionsValidator] Block status:
+        - Last processed: ${lastProcessedBlockNumber}
+        - Current network: ${currentBlockNumber}
+        - Processing range: ${startBlock} → ${endBlock}
+        - Blocks to process: ${Math.max(0, endBlock - startBlock)}`);
+
       if (startBlock >= endBlock) {
-        console.log('No new blocks to process');
+        console.log(
+          '✅ [ActionsValidator] No new blocks to process - blockchain is up to date'
+        );
         return setTimeout(parse, 5000);
       }
 
+      // Check if we need to limit the batch size
+      const originalEndBlock = endBlock;
       if (
         endBlock - startBlock >
         CONFIG.PARSING.ARBITRUM.MAX_BLOCKS_TO_PROCESS
       ) {
         endBlock = startBlock + CONFIG.PARSING.ARBITRUM.MAX_BLOCKS_TO_PROCESS;
+        console.log(`⚠️  [ActionsValidator] Large block range detected - limiting batch:
+          - Original range: ${startBlock} → ${originalEndBlock} (${
+          originalEndBlock - startBlock
+        } blocks)
+          - Limited range: ${startBlock} → ${endBlock} (${
+          endBlock - startBlock
+        } blocks)
+          - Max blocks per batch: ${
+            CONFIG.PARSING.ARBITRUM.MAX_BLOCKS_TO_PROCESS
+          }`);
       }
 
+      console.log('🎯 [ActionsValidator] Loading target contract addresses...');
+      const contractLookupStartTime = Date.now();
       const targetContractAddressesMap = await getTargetContractAddresses();
       const targetContractAddresses = Array.from(
         targetContractAddressesMap.keys()
       );
+      const contractLookupDuration = Date.now() - contractLookupStartTime;
+
+      console.log(`📋 [ActionsValidator] Target contracts loaded:
+        - Contract count: ${targetContractAddresses.length}
+        - Lookup duration: ${contractLookupDuration}ms
+        - Contract addresses: ${targetContractAddresses
+          .slice(0, 3)
+          .join(', ')}${targetContractAddresses.length > 3 ? '...' : ''}`);
+
+      console.log(
+        `🔎 [ActionsValidator] Fetching logs for block range ${startBlock} → ${endBlock}...`
+      );
+      const logFetchStartTime = Date.now();
+
       const logs = await EvmService.getLogsInBlockRange(
         provider,
         targetContractAddresses,
@@ -87,87 +130,270 @@ export namespace ActionsValidatorService {
         endBlock
       );
 
+      const logFetchDuration = Date.now() - logFetchStartTime;
+      console.log(`📋 [ActionsValidator] Log fetch completed:
+        - Found ${logs.length} events
+        - Fetch duration: ${logFetchDuration}ms
+        - Target contracts: ${targetContractAddresses.length}`);
+
+      if (logs.length === 0) {
+        console.log(
+          '📭 [ActionsValidator] No events found in this block range'
+        );
+        await saveLastProcessedBlockNumber(endBlock);
+        console.log(
+          `💾 [ActionsValidator] Updated last processed block to: ${endBlock}`
+        );
+        const totalDuration = Date.now() - parseStartTime;
+        console.log(
+          `⏱️  [ActionsValidator] Validation cycle completed in ${totalDuration}ms (no events to process)`
+        );
+        return setTimeout(parse, 5000);
+      }
+
+      // Process blockchain events for quest validation
+      console.log(
+        `🔄 [ActionsValidator] Processing ${logs.length} blockchain events...`
+      );
       let lastProcessedBlockNumberInCurrentBatch = startBlock;
-      for (const log of logs) {
+      let processedEvents = 0;
+      let skippedEvents = 0;
+      let errorEvents = 0;
+      let erc20Events = 0;
+      let nftEvents = 0;
+
+      for (const [index, log] of logs.entries()) {
         try {
+          console.log(
+            `📝 [ActionsValidator] Processing event ${index + 1}/${
+              logs.length
+            } (Block: ${log.blockNumber}, TxHash: ${log.transactionHash})`
+          );
+
           const config = targetContractAddressesMap.get(log.address);
           if (!config) {
-            console.log(`Quest with address ${log.address} not found`);
+            skippedEvents++;
+            console.log(
+              `⏭️  [ActionsValidator] Skipped event ${
+                index + 1
+              } - contract address ${log.address} not in target list`
+            );
             continue;
           }
+
+          console.log(`🎯 [ActionsValidator] Found target contract:
+            - Address: ${log.address}
+            - Quest ID: ${config.questId}
+            - Quest Type: ${config.questType}
+            - Transaction: ${log.transactionHash}`);
+
+          const eventProcessStartTime = Date.now();
 
           switch (config.questType) {
             case EQuestTypes.RECEIVE_ERC20:
             case EQuestTypes.SEND_ERC20: {
+              console.log(
+                '💰 [ActionsValidator] Processing ERC20 transfer event...'
+              );
               const decoded = decodeERC20TransferEvent(log);
               if (!decoded) {
+                skippedEvents++;
+                console.log(
+                  `⏭️  [ActionsValidator] Skipped ERC20 event ${
+                    index + 1
+                  } - failed to decode`
+                );
                 continue;
               }
               const { from, to, value } = decoded;
-              console.log(`ERC20 transfer event: ${from} -> ${to} -> ${value}`);
+              console.log(`✅ [ActionsValidator] ERC20 transfer decoded:
+                - From: ${from}
+                - To: ${to}
+                - Value: ${value}
+                - Quest Type: ${config.questType}`);
+
               await handleERC20Quest(config.questId, { from, to, value });
+              erc20Events++;
               break;
             }
             case EQuestTypes.SEND_NFT:
             case EQuestTypes.RECEIVE_NFT: {
+              console.log(
+                '🖼️  [ActionsValidator] Processing NFT transfer event...'
+              );
               const decoded = decodeNFTTransferEvent(log);
               if (!decoded) {
+                skippedEvents++;
+                console.log(
+                  `⏭️  [ActionsValidator] Skipped NFT event ${
+                    index + 1
+                  } - failed to decode`
+                );
                 continue;
               }
               const { from, to, tokenId } = decoded;
-              console.log(`NFT transfer event: ${from} -> ${to} -> ${tokenId}`);
+              console.log(`✅ [ActionsValidator] NFT transfer decoded:
+                - From: ${from}
+                - To: ${to}
+                - Token ID: ${tokenId}
+                - Quest Type: ${config.questType}`);
+
+              await handleNFTQuest(config.questId, { from, to });
+              nftEvents++;
               break;
             }
+            default:
+              console.log(
+                `⚠️  [ActionsValidator] Unknown quest type: ${config.questType}`
+              );
+              skippedEvents++;
+              continue;
           }
 
+          const eventProcessDuration = Date.now() - eventProcessStartTime;
+          processedEvents++;
+          console.log(
+            `✅ [ActionsValidator] Successfully processed event ${
+              index + 1
+            } in ${eventProcessDuration}ms`
+          );
+
+          // Update block progress if we've moved to a new block
           if (log.blockNumber !== lastProcessedBlockNumberInCurrentBatch) {
             await saveLastProcessedBlockNumber(log.blockNumber);
             lastProcessedBlockNumberInCurrentBatch = log.blockNumber;
+            console.log(
+              `💾 [ActionsValidator] Updated progress to block: ${log.blockNumber}`
+            );
           }
         } catch (error) {
-          console.error(
-            `Error processing log ${log.transactionHash}: ${error}`
-          );
+          errorEvents++;
+          console.error(`❌ [ActionsValidator] Error processing event ${
+            index + 1
+          }:
+            - Transaction: ${log.transactionHash}
+            - Block: ${log.blockNumber}
+            - Contract: ${log.address}
+            - Error: ${error}
+            - Stack: ${
+              error instanceof Error ? error.stack : 'No stack trace'
+            }`);
         }
       }
-      await saveLastProcessedBlockNumber(
-        lastProcessedBlockNumberInCurrentBatch
-      );
+
+      // Final block number update
+      await saveLastProcessedBlockNumber(endBlock);
+
+      const totalDuration = Date.now() - parseStartTime;
+      console.log(`🎉 [ActionsValidator] Batch processing completed:
+        - Total events found: ${logs.length}
+        - Successfully processed: ${processedEvents}
+        - ERC20 events: ${erc20Events}
+        - NFT events: ${nftEvents}
+        - Skipped events: ${skippedEvents}
+        - Error events: ${errorEvents}
+        - Final processed block: ${endBlock}
+        - Total duration: ${totalDuration}ms
+        - Average time per event: ${
+          processedEvents > 0 ? Math.round(totalDuration / processedEvents) : 0
+        }ms`);
     } catch (error) {
-      console.error(error);
+      const totalDuration = Date.now() - parseStartTime;
+      console.error(`💥 [ActionsValidator] Critical error in validation cycle:
+        - Duration before error: ${totalDuration}ms
+        - Error: ${error}
+        - Stack: ${error instanceof Error ? error.stack : 'No stack trace'}
+        - Network: ${ENetworks.ZETACHAIN}`);
     } finally {
+      console.log(
+        '⏰ [ActionsValidator] Scheduling next validation cycle in 5 seconds...'
+      );
       setTimeout(parse, 5000);
     }
   };
 
   const decodeERC20TransferEvent = (log: Log) => {
-    const iface = new Interface(ERC20_ABI);
-    const parsed = iface.parseLog(log);
+    console.log(`🔍 [ActionsValidator] Decoding ERC20 transfer event:
+      - Transaction: ${log.transactionHash}
+      - Block: ${log.blockNumber}
+      - Contract: ${log.address}`);
 
-    if (!parsed) {
-      console.log(
-        `Failed to parse ERC20 transfer event for log ${log.transactionHash}`
-      );
+    try {
+      const iface = new Interface(ERC20_ABI);
+      const parsed = iface.parseLog(log);
+
+      if (!parsed || parsed.name !== 'Transfer') {
+        console.log(`❌ [ActionsValidator] Failed to decode ERC20 transfer event:
+          - Transaction: ${log.transactionHash}
+          - Block: ${log.blockNumber}
+          - Contract: ${log.address}
+          - Expected event: 'Transfer'
+          - Actual event: ${parsed?.name || 'null'}
+          - Topics: ${JSON.stringify(log.topics)}
+          - Data: ${log.data}`);
+        return null;
+      }
+
+      const [from, to, value] = parsed.args;
+      console.log(`✅ [ActionsValidator] Successfully decoded ERC20 transfer:
+        - Transaction: ${log.transactionHash}
+        - Event name: ${parsed.name}
+        - Args count: ${parsed.args.length}`);
+
+      return { from, to, value };
+    } catch (error) {
+      console.error(`💥 [ActionsValidator] Error decoding ERC20 transfer event:
+        - Transaction: ${log.transactionHash}
+        - Block: ${log.blockNumber}
+        - Contract: ${log.address}
+        - Error: ${error}
+        - Stack: ${error instanceof Error ? error.stack : 'No stack trace'}
+        - Log topics: ${JSON.stringify(log.topics)}
+        - Log data: ${log.data}`);
       return null;
     }
-
-    const [from, to, value] = parsed.args;
-    return { from, to, value };
   };
 
   const decodeNFTTransferEvent = (log: Log) => {
-    const iface = new Interface(ERC721_ABI);
-    const parsed = iface.parseLog(log);
+    console.log(`🔍 [ActionsValidator] Decoding NFT transfer event:
+      - Transaction: ${log.transactionHash}
+      - Block: ${log.blockNumber}
+      - Contract: ${log.address}`);
 
-    if (!parsed) {
-      console.log(
-        `Failed to parse NFT transfer event for log ${log.transactionHash}`
-      );
+    try {
+      const iface = new Interface(ERC721_ABI);
+      const parsed = iface.parseLog(log);
+
+      if (!parsed || parsed.name !== 'Transfer') {
+        console.log(`❌ [ActionsValidator] Failed to decode NFT transfer event:
+          - Transaction: ${log.transactionHash}
+          - Block: ${log.blockNumber}
+          - Contract: ${log.address}
+          - Expected event: 'Transfer'
+          - Actual event: ${parsed?.name || 'null'}
+          - Topics: ${JSON.stringify(log.topics)}
+          - Data: ${log.data}`);
+        return null;
+      }
+
+      const [from, to, tokenId] = parsed.args;
+      console.log(`✅ [ActionsValidator] Successfully decoded NFT transfer:
+        - Transaction: ${log.transactionHash}
+        - Event name: ${parsed.name}
+        - Args count: ${parsed.args.length}`);
+
+      return { from, to, tokenId };
+    } catch (error) {
+      console.error(`💥 [ActionsValidator] Error decoding NFT transfer event:
+        - Transaction: ${log.transactionHash}
+        - Block: ${log.blockNumber}
+        - Contract: ${log.address}
+        - Error: ${error}
+        - Stack: ${error instanceof Error ? error.stack : 'No stack trace'}
+        - Log topics: ${JSON.stringify(log.topics)}
+        - Log data: ${log.data}`);
       return null;
     }
-
-    const [from, to, tokenId] = parsed.args;
-    return { from, to, tokenId };
   };
 
   export const updateUserQuestStatusWithOptimisticLock = async (
@@ -217,27 +443,41 @@ export namespace ActionsValidatorService {
       value: bigint;
     }
   ) => {
+    console.log(`🔍 [ActionsValidator] Validating ERC20 quest criteria:
+      - Expected from: ${expected.from || 'any'}
+      - Actual from: ${actual.from}
+      - Expected to: ${expected.to || 'any'}
+      - Actual to: ${actual.to}
+      - Expected value: ${expected.value || 'any'}
+      - Actual value: ${actual.value}`);
+
     if (
       expected.from &&
       expected.from.toLowerCase() !== actual.from.toLowerCase()
     ) {
-      console.log(
-        `From ${actual.from} is not the expected from ${expected.from}`
-      );
+      console.log(`❌ [ActionsValidator] ERC20 validation failed - sender mismatch:
+        - Expected from: ${expected.from}
+        - Actual from: ${actual.from}`);
       return false;
     }
+
     if (expected.to && expected.to.toLowerCase() !== actual.to.toLowerCase()) {
-      console.log(`To ${actual.to} is not the expected to ${expected.to}`);
-      return;
+      console.log(`❌ [ActionsValidator] ERC20 validation failed - recipient mismatch:
+        - Expected to: ${expected.to}
+        - Actual to: ${actual.to}`);
+      return false;
     }
 
     if (expected.value && expected.value !== actual.value) {
-      console.log(
-        `Value ${actual.value} is not the expected value ${expected.value}`
-      );
+      console.log(`❌ [ActionsValidator] ERC20 validation failed - value mismatch:
+        - Expected value: ${expected.value}
+        - Actual value: ${actual.value}`);
       return false;
     }
 
+    console.log(
+      '✅ [ActionsValidator] ERC20 quest validation successful - all criteria met'
+    );
     return true;
   };
 
@@ -249,54 +489,130 @@ export namespace ActionsValidatorService {
       value: bigint;
     }
   ) => {
-    const [questInfo] = await db
-      .select()
-      .from(quests)
-      .where(eq(quests.id, questId));
+    const questStartTime = Date.now();
+    console.log(`🔧 [ActionsValidator] Handling ERC20 quest validation:
+      - Quest ID: ${questId}
+      - From: ${actual.from}
+      - To: ${actual.to}
+      - Value: ${actual.value}`);
 
-    if (!questInfo) {
-      console.log(`Quest with id ${questId} not found`);
-      return;
-    }
+    try {
+      console.log('🎯 [ActionsValidator] Looking up quest information...');
+      const questLookupStartTime = Date.now();
+      const [questInfo] = await db
+        .select()
+        .from(quests)
+        .where(eq(quests.id, questId));
+      const questLookupDuration = Date.now() - questLookupStartTime;
 
-    let expectedResult: {
-      from: string | null;
-      to: string | null;
-      value: bigint | null;
-    };
+      if (!questInfo) {
+        console.log(`❌ [ActionsValidator] Quest not found:
+          - Quest ID: ${questId}
+          - Lookup duration: ${questLookupDuration}ms`);
+        return;
+      }
 
-    let userWalletAddress: string;
-    if (questInfo.questType === EQuestTypes.SEND_ERC20) {
-      expectedResult = {
-        from: null,
-        to: questInfo.toAddress,
-        value: questInfo.amount ? BigInt(questInfo.amount) : null,
+      console.log(`✅ [ActionsValidator] Quest found:
+        - Quest name: '${questInfo.name}'
+        - Quest type: ${questInfo.questType}
+        - Token address: ${questInfo.tokenAddress}
+        - Expected amount: ${questInfo.amount}
+        - Expected from: ${questInfo.fromAddress}
+        - Expected to: ${questInfo.toAddress}
+        - Lookup duration: ${questLookupDuration}ms`);
+
+      let expectedResult: {
+        from: string | null;
+        to: string | null;
+        value: bigint | null;
       };
-      userWalletAddress = actual.from;
-    } else if (questInfo.questType === EQuestTypes.RECEIVE_ERC20) {
-      expectedResult = {
-        from: questInfo.fromAddress,
-        to: null,
-        value: questInfo.amount ? BigInt(questInfo.amount) : null,
-      };
-      userWalletAddress = actual.to;
-    } else {
-      console.log(`Quest with id ${questId} is not a valid ERC20 quest`);
-      return;
-    }
 
-    const isQuestCompleted = isERC20QuestCompleted(expectedResult, actual);
-    if (!isQuestCompleted) {
-      console.log(`Quest with id ${questId} is not completed`);
-      return;
-    }
+      let userWalletAddress: string;
+      if (questInfo.questType === EQuestTypes.SEND_ERC20) {
+        expectedResult = {
+          from: null,
+          to: questInfo.toAddress,
+          value: questInfo.amount ? BigInt(questInfo.amount) : null,
+        };
+        userWalletAddress = actual.from;
+        console.log(`📤 [ActionsValidator] Processing SEND_ERC20 quest:
+          - User wallet (sender): ${userWalletAddress}
+          - Expected recipient: ${questInfo.toAddress}
+          - Expected amount: ${questInfo.amount}`);
+      } else if (questInfo.questType === EQuestTypes.RECEIVE_ERC20) {
+        expectedResult = {
+          from: questInfo.fromAddress,
+          to: null,
+          value: questInfo.amount ? BigInt(questInfo.amount) : null,
+        };
+        userWalletAddress = actual.to;
+        console.log(`📥 [ActionsValidator] Processing RECEIVE_ERC20 quest:
+          - User wallet (recipient): ${userWalletAddress}
+          - Expected sender: ${questInfo.fromAddress}
+          - Expected amount: ${questInfo.amount}`);
+      } else {
+        console.log(`❌ [ActionsValidator] Invalid quest type for ERC20 handling:
+          - Quest ID: ${questId}
+          - Quest type: ${questInfo.questType}
+          - Expected: ${EQuestTypes.SEND_ERC20} or ${EQuestTypes.RECEIVE_ERC20}`);
+        return;
+      }
 
-    await updateUserQuestStatusWithOptimisticLock(
-      questId,
-      userWalletAddress,
-      EQuestStatuses.IN_PROGRESS,
-      EQuestStatuses.CLAIM
-    );
+      console.log(
+        '🔍 [ActionsValidator] Validating quest completion criteria...'
+      );
+      const validationStartTime = Date.now();
+      const isQuestCompleted = await isERC20QuestCompleted(
+        expectedResult,
+        actual
+      );
+      const validationDuration = Date.now() - validationStartTime;
+
+      if (!isQuestCompleted) {
+        console.log(`❌ [ActionsValidator] Quest validation failed:
+          - Quest ID: ${questId}
+          - Quest name: '${questInfo.name}'
+          - User wallet: ${userWalletAddress}
+          - Validation duration: ${validationDuration}ms`);
+        return;
+      }
+
+      console.log(`✅ [ActionsValidator] Quest validation successful:
+        - Quest ID: ${questId}
+        - Quest name: '${questInfo.name}'
+        - User wallet: ${userWalletAddress}
+        - Validation duration: ${validationDuration}ms`);
+
+      console.log('🔄 [ActionsValidator] Updating quest status to CLAIM...');
+      const statusUpdateStartTime = Date.now();
+      await updateUserQuestStatusWithOptimisticLock(
+        questId,
+        userWalletAddress,
+        EQuestStatuses.IN_PROGRESS,
+        EQuestStatuses.CLAIM
+      );
+      const statusUpdateDuration = Date.now() - statusUpdateStartTime;
+
+      const totalQuestDuration = Date.now() - questStartTime;
+      console.log(`🎉 [ActionsValidator] ERC20 quest processing completed:
+        - Quest ID: ${questId}
+        - Quest name: '${questInfo.name}'
+        - User wallet: ${userWalletAddress}
+        - Status: IN_PROGRESS → CLAIM
+        - Status update duration: ${statusUpdateDuration}ms
+        - Total processing duration: ${totalQuestDuration}ms`);
+    } catch (error) {
+      const totalQuestDuration = Date.now() - questStartTime;
+      console.error(`💥 [ActionsValidator] Error handling ERC20 quest:
+        - Quest ID: ${questId}
+        - User from: ${actual.from}
+        - User to: ${actual.to}
+        - Value: ${actual.value}
+        - Duration before error: ${totalQuestDuration}ms
+        - Error: ${error}
+        - Stack: ${error instanceof Error ? error.stack : 'No stack trace'}`);
+      throw error;
+    }
   };
 
   export const handleNFTQuest = async (
@@ -306,51 +622,124 @@ export namespace ActionsValidatorService {
       to: string;
     }
   ) => {
-    const [questInfo] = await db
-      .select()
-      .from(quests)
-      .where(eq(quests.id, questId));
+    const questStartTime = Date.now();
+    console.log(`🔧 [ActionsValidator] Handling NFT quest validation:
+      - Quest ID: ${questId}
+      - From: ${actual.from}
+      - To: ${actual.to}`);
 
-    if (!questInfo) {
-      console.log(`Quest with id ${questId} not found`);
-      return;
-    }
+    try {
+      console.log('🎯 [ActionsValidator] Looking up NFT quest information...');
+      const questLookupStartTime = Date.now();
+      const [questInfo] = await db
+        .select()
+        .from(quests)
+        .where(eq(quests.id, questId));
+      const questLookupDuration = Date.now() - questLookupStartTime;
 
-    let expectedResult: {
-      from: string | null;
-      to: string | null;
-    };
+      if (!questInfo) {
+        console.log(`❌ [ActionsValidator] NFT quest not found:
+          - Quest ID: ${questId}
+          - Lookup duration: ${questLookupDuration}ms`);
+        return;
+      }
 
-    let userWalletAddress: string;
-    if (questInfo.questType === EQuestTypes.SEND_ERC20) {
-      expectedResult = {
-        from: null,
-        to: questInfo.toAddress,
+      console.log(`✅ [ActionsValidator] NFT quest found:
+        - Quest name: '${questInfo.name}'
+        - Quest type: ${questInfo.questType}
+        - NFT address: ${questInfo.nftAddress}
+        - Expected from: ${questInfo.fromAddress}
+        - Expected to: ${questInfo.toAddress}
+        - Lookup duration: ${questLookupDuration}ms`);
+
+      let expectedResult: {
+        from: string | null;
+        to: string | null;
       };
-      userWalletAddress = actual.from;
-    } else if (questInfo.questType === EQuestTypes.RECEIVE_ERC20) {
-      expectedResult = {
-        from: questInfo.fromAddress,
-        to: null,
-      };
-      userWalletAddress = actual.to;
-    } else {
-      console.log(`Quest with id ${questId} is not a valid NFT quest`);
-      return;
-    }
 
-    const isQuestCompleted = isNFTQuestCompleted(expectedResult, actual);
-    if (!isQuestCompleted) {
-      console.log(`Quest with id ${questId} is not completed`);
-      return;
-    }
+      let userWalletAddress: string;
+      if (questInfo.questType === EQuestTypes.SEND_NFT) {
+        expectedResult = {
+          from: null,
+          to: questInfo.toAddress,
+        };
+        userWalletAddress = actual.from;
+        console.log(`📤 [ActionsValidator] Processing SEND_NFT quest:
+          - User wallet (sender): ${userWalletAddress}
+          - Expected recipient: ${questInfo.toAddress}`);
+      } else if (questInfo.questType === EQuestTypes.RECEIVE_NFT) {
+        expectedResult = {
+          from: questInfo.fromAddress,
+          to: null,
+        };
+        userWalletAddress = actual.to;
+        console.log(`📥 [ActionsValidator] Processing RECEIVE_NFT quest:
+          - User wallet (recipient): ${userWalletAddress}
+          - Expected sender: ${questInfo.fromAddress}`);
+      } else {
+        console.log(`❌ [ActionsValidator] Invalid quest type for NFT handling:
+          - Quest ID: ${questId}
+          - Quest type: ${questInfo.questType}
+          - Expected: ${EQuestTypes.SEND_NFT} or ${EQuestTypes.RECEIVE_NFT}`);
+        return;
+      }
 
-    await updateUserQuestStatusWithOptimisticLock(
-      questId,
-      userWalletAddress,
-      EQuestStatuses.IN_PROGRESS,
-      EQuestStatuses.CLAIM
-    );
+      console.log(
+        '🔍 [ActionsValidator] Validating NFT quest completion criteria...'
+      );
+      const validationStartTime = Date.now();
+      const isQuestCompleted = await isNFTQuestCompleted(
+        expectedResult,
+        actual
+      );
+      const validationDuration = Date.now() - validationStartTime;
+
+      if (!isQuestCompleted) {
+        console.log(`❌ [ActionsValidator] NFT quest validation failed:
+          - Quest ID: ${questId}
+          - Quest name: '${questInfo.name}'
+          - User wallet: ${userWalletAddress}
+          - Validation duration: ${validationDuration}ms`);
+        return;
+      }
+
+      console.log(`✅ [ActionsValidator] NFT quest validation successful:
+        - Quest ID: ${questId}
+        - Quest name: '${questInfo.name}'
+        - User wallet: ${userWalletAddress}
+        - Validation duration: ${validationDuration}ms`);
+
+      console.log(
+        '🔄 [ActionsValidator] Updating NFT quest status to CLAIM...'
+      );
+      const statusUpdateStartTime = Date.now();
+      await updateUserQuestStatusWithOptimisticLock(
+        questId,
+        userWalletAddress,
+        EQuestStatuses.IN_PROGRESS,
+        EQuestStatuses.CLAIM
+      );
+      const statusUpdateDuration = Date.now() - statusUpdateStartTime;
+
+      const totalQuestDuration = Date.now() - questStartTime;
+      console.log(`🎉 [ActionsValidator] NFT quest processing completed:
+        - Quest ID: ${questId}
+        - Quest name: '${questInfo.name}'
+        - User wallet: ${userWalletAddress}
+        - Status: IN_PROGRESS → CLAIM
+        - Status update duration: ${statusUpdateDuration}ms
+        - Total processing duration: ${totalQuestDuration}ms`);
+    } catch (error) {
+      const totalQuestDuration = Date.now() - questStartTime;
+      console.error(`💥 [ActionsValidator] Error handling NFT quest:
+        - Quest ID: ${questId}
+        - User from: ${actual.from}
+        - User to: ${actual.to}
+        - Duration before error: ${totalQuestDuration}ms
+        - Error: ${error}
+        - Stack: ${error instanceof Error ? error.stack : 'No stack trace'}`);
+      throw error;
+    }
   };
 
   export const isNFTQuestCompleted = async (
@@ -363,20 +752,34 @@ export namespace ActionsValidatorService {
       to: string;
     }
   ) => {
+    console.log(`🔍 [ActionsValidator] Validating NFT quest criteria:
+      - Expected from: ${expected.from || 'any'}
+      - Actual from: ${actual.from}
+      - Expected to: ${expected.to || 'any'}
+      - Actual to: ${actual.to}`);
+
     if (
       expected.from &&
       expected.from.toLowerCase() !== actual.from.toLowerCase()
     ) {
-      console.log(
-        `From ${actual.from} is not the expected from ${expected.from}`
-      );
-      return false;
-    }
-    if (expected.to && expected.to.toLowerCase() !== actual.to.toLowerCase()) {
-      console.log(`To ${actual.to} is not the expected to ${expected.to}`);
+      console.log(`❌ [ActionsValidator] NFT validation failed - sender mismatch:
+        - Expected from: ${expected.from}
+        - Actual from: ${actual.from}`);
       return false;
     }
 
+    if (expected.to && expected.to.toLowerCase() !== actual.to.toLowerCase()) {
+      console.log(`❌ [ActionsValidator] NFT validation failed - recipient mismatch:
+        - Expected to: ${expected.to}
+        - Actual to: ${actual.to}`);
+      return false;
+    }
+
+    console.log(
+      '✅ [ActionsValidator] NFT quest validation successful - all criteria met'
+    );
     return true;
   };
 }
+
+ActionsValidatorService.parse();

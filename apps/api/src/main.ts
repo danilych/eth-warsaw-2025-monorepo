@@ -11,6 +11,8 @@ import { CivicAuth } from '@civic/auth/server';
 import { civicConfig } from './constants/civic';
 import type { Env } from './env';
 import { cors } from 'hono/cors';
+import './services/actions-validator.service';
+import './services/claims-parser.service';
 
 // Init
 export const app = new OpenAPIHono<Env>();

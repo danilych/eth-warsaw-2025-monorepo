@@ -1,5 +1,8 @@
+// biome-ignore lint/correctness/noUnusedImports: <explanation>
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles, Rocket } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const CTASection = () => {
   return (
@@ -62,15 +65,17 @@ export const CTASection = () => {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-          <Button
-            variant="hero"
-            size="xl"
-            className="group animate-glow-pulse text-xl px-12 py-6"
-          >
-            <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform" />
-            Launch App
-            <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-          </Button>
+          <Link to="/auth">
+            <Button
+              variant="hero"
+              size="xl"
+              className="group animate-glow-pulse text-xl px-12 py-6"
+            >
+              <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+              Launch App
+              <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+            </Button>
+          </Link>
         </div>
 
         {/* Final incentive */}
