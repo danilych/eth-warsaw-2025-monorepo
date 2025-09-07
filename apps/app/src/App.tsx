@@ -13,13 +13,13 @@ import LeaderboardPage from './pages/LeaderboardPage';
 import { AuthPage } from './pages/AuthPage';
 import { CivicAuthProvider } from '@civic/auth-web3/react';
 import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { zetachainAthensTestnet } from 'viem/chains';
+import { zetachainAthensTestnet, arbitrumSepolia } from 'viem/chains';
 import { WagmiProvider } from 'wagmi';
 
 const config = getDefaultConfig({
   appName: 'HashWay',
   projectId: 'c5c5db8b1082ef2290e64e48cd5ed41f',
-  chains: [zetachainAthensTestnet],
+  chains: [zetachainAthensTestnet, arbitrumSepolia],
   ssr: false,
 });
 
