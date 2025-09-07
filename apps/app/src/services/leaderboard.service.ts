@@ -121,7 +121,7 @@ export const LeaderboardService = {
   formatBalance(balance: string): string {
     const balanceNumber = Number.parseFloat(balance);
     const ethAmount = balanceNumber / 10 ** 18;
-    return ethAmount.toFixed(4);
+    return ethAmount.toFixed(2);
   },
 
   /**

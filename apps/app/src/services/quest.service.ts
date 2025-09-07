@@ -234,7 +234,7 @@ export const QuestService = {
     const rewardNumber =
       typeof reward === 'string' ? Number.parseFloat(reward) : Number(reward);
     const ethAmount = rewardNumber / 10 ** 18;
-    return ethAmount.toFixed(4);
+    return ethAmount.toFixed(2);
   },
 
   /**
