@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from './button';
 import { LogIn } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
+import { useUser } from '@civic/auth-web3/react';
 
 interface LoginButtonProps {
   variant?: 'default' | 'outline' | 'ghost' | 'hero';
@@ -15,7 +15,7 @@ export function LoginButton({
   size = 'default',
   className,
 }: LoginButtonProps) {
-  const { signIn, isLoading } = useAuth();
+  const { signIn, isLoading } = useUser();
 
   const handleLogin = async () => {
     await signIn();

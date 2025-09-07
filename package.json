@@ -31,9 +31,5 @@
   "workspaces": [
     "apps/*",
     "lib"
-  ],
-  "dependencies": {
-    "@neondatabase/serverless": "^0.10.4",
-    "google-auth-library": "^9.15.1"
-  }
+  ]
 }

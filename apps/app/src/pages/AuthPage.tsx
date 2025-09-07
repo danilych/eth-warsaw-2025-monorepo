@@ -9,20 +9,20 @@ import {
 } from '../components/ui/card';
 import { Trophy } from 'lucide-react';
 import { LoginButton } from '../components/ui/AuthButtons';
-import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '@civic/auth-web3/react';
 
 export const AuthPage: React.FC = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useUser();
   const navigate = useNavigate();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
-    if (user && !isLoading) {
+    if (user && isAuthenticated && !isLoading) {
       navigate('/quests');
       return;
     }
-  }, [user, isLoading]);
+  }, [user, isAuthenticated]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">

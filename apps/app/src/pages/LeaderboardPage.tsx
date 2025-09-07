@@ -1,6 +1,6 @@
+// biome-ignore lint/style/useImportType: <explanation>
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
 import { LeaderboardService } from '../services/leaderboard.service';
 import type {
   LeaderboardData,
@@ -25,9 +25,10 @@ import {
   TrendingUp,
   RefreshCw,
 } from 'lucide-react';
+import { useUser } from '@civic/auth-web3/react';
 
 const LeaderboardPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading } = useUser();
   const navigate = useNavigate();
   const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null);
   const [stats, setStats] = useState<LeaderboardStats | null>(null);
