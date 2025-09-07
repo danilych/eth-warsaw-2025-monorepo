@@ -28,6 +28,8 @@ export namespace SignatureService {
     try {
       const signingKey = process.env.PRIVATE_KEY;
 
+      console.log('Signing key', signingKey);
+
       if (!signingKey) {
         throw new Error('Private key is required for signature generation');
       }
