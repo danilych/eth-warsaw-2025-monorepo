@@ -13,10 +13,10 @@ import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 export const AuthPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  if (user) {
+  if (user && !isLoading) {
     navigate('/quests');
     return;
   }
