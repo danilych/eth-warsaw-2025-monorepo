@@ -357,7 +357,7 @@ questRouter.openapi(
   async (c) => {
     const { userId, questId } = c.req.valid('param');
 
-    const [result] = await db
+    const result = await db
       .select({
         id: quests.id,
         name: quests.name,
@@ -379,15 +379,11 @@ questRouter.openapi(
         },
       })
       .from(quests)
-      .leftJoin(userQuests, eq(quests.id, userQuests.questId))
-      .where(
-        and(
-          eq(userQuests.userId, userId),
-          eq(userQuests.questId, questId),
-          isNull(userQuests.deletedAt),
-          isNull(quests.deletedAt)
-        )
+      .leftJoin(
+        userQuests,
+        and(eq(quests.id, userQuests.questId), eq(userQuests.userId, userId))
       )
+      .where(and(isNull(quests.deletedAt), eq(quests.id, questId)))
       .limit(1);
 
     if (!result) {
@@ -422,17 +418,14 @@ questRouter.openapi(
   async (c) => {
     const { userId } = c.req.valid('param');
 
-    const [userQuestsWithQuests] = await db
+    const userQuestsWithQuests = await db
       .select()
       .from(quests)
-      .leftJoin(userQuests, eq(quests.id, userQuests.questId))
-      .where(
-        and(
-          eq(userQuests.userId, userId),
-          isNull(userQuests.deletedAt),
-          isNull(quests.deletedAt)
-        )
-      );
+      .leftJoin(
+        userQuests,
+        and(eq(quests.id, userQuests.questId), eq(userQuests.userId, userId))
+      )
+      .where(isNull(quests.deletedAt));
 
     return c.json({
       success: true,
