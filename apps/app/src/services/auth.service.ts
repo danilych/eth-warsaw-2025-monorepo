@@ -2,15 +2,6 @@ import { apiClient } from './api';
 import type { User } from '../types/api';
 
 export const AuthService = {
-  async logout(): Promise<void> {
-    try {
-      await apiClient.get('/auth/auth/logout');
-    } catch (error) {
-      console.error('Logout error:', error);
-      window.location.href = '/';
-    }
-  },
-
   async createUser({
     civicId,
     civicAddress,
@@ -22,14 +13,14 @@ export const AuthService = {
     walletAddress: string;
     accessToken: string;
   }): Promise<User> {
-    const response = await apiClient.post<User>(
-      `/auth/auth/user?id=${encodeURIComponent(
-        civicId
-      )}&walletAddress=${encodeURIComponent(
-        walletAddress
-      )}&civicWalletAddress=${encodeURIComponent(civicAddress)}`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
+    const url = `/auth/auth/user?id=${encodeURIComponent(
+      civicId
+    )}&walletAddress=${encodeURIComponent(
+      walletAddress
+    )}&civicWalletAddress=${encodeURIComponent(civicAddress)}`;
+    const response = await apiClient.post<User>(url, undefined, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
 
     if (!response.success || !response.data) {
       throw new Error('Failed to create user');
