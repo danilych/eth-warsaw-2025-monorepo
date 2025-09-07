@@ -1,8 +1,12 @@
+// biome-ignore lint/style/useImportType: <explanation>
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
 import { LeaderboardService } from '../services/leaderboard.service';
-import type { LeaderboardData, LeaderboardStats, UserPosition } from '../services/leaderboard.service';
+import type {
+  LeaderboardData,
+  LeaderboardStats,
+  UserPosition,
+} from '../services/leaderboard.service';
 import { Button } from '../components/ui/button';
 import {
   Card,
@@ -12,10 +16,19 @@ import {
 } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Skeleton } from '../components/ui/skeleton';
-import { Trophy, Crown, Medal, Users, Coins, TrendingUp, RefreshCw } from 'lucide-react';
+import {
+  Trophy,
+  Crown,
+  Medal,
+  Users,
+  Coins,
+  TrendingUp,
+  RefreshCw,
+} from 'lucide-react';
+import { useUser } from '@civic/auth-web3/react';
 
 const LeaderboardPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading } = useUser();
   const navigate = useNavigate();
   const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null);
   const [stats, setStats] = useState<LeaderboardStats | null>(null);
@@ -26,39 +39,44 @@ const LeaderboardPage: React.FC = () => {
 
   // Redirect to auth if not logged in
   useEffect(() => {
-    if (!user) {
+    if (!isLoading && (!user || !isAuthenticated)) {
       navigate('/auth');
       return;
     }
-  }, [user, navigate]);
+  }, [user, isAuthenticated, isLoading, navigate]);
 
   // Fetch leaderboard data
-  const fetchLeaderboardData = useCallback(async (forceRefresh = false) => {
-    try {
-      if (forceRefresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
+  const fetchLeaderboardData = useCallback(
+    async (forceRefresh = false) => {
+      try {
+        if (forceRefresh) {
+          setRefreshing(true);
+        } else {
+          setLoading(true);
+        }
+
+        const [leaderboardData, statsData, userPos] = await Promise.all([
+          LeaderboardService.getLeaderboard(forceRefresh),
+          LeaderboardService.getLeaderboardStats(),
+          user
+            ? LeaderboardService.getCurrentUserPosition()
+            : Promise.resolve(null),
+        ]);
+
+        setLeaderboard(leaderboardData);
+        setStats(statsData);
+        setUserPosition(userPos);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load leaderboard. Please try again.');
+        console.error('Error fetching leaderboard:', err);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-
-      const [leaderboardData, statsData, userPos] = await Promise.all([
-        LeaderboardService.getLeaderboard(forceRefresh),
-        LeaderboardService.getLeaderboardStats(),
-        user ? LeaderboardService.getCurrentUserPosition() : Promise.resolve(null),
-      ]);
-
-      setLeaderboard(leaderboardData);
-      setStats(statsData);
-      setUserPosition(userPos);
-      setError(null);
-    } catch (err) {
-      setError('Failed to load leaderboard. Please try again.');
-      console.error('Error fetching leaderboard:', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [user]);
+    },
+    [user]
+  );
 
   useEffect(() => {
     if (user) {
@@ -115,7 +133,10 @@ const LeaderboardPage: React.FC = () => {
           </div>
           <div className="space-y-4">
             {[...Array(5)].map((_, i) => (
-              <Skeleton key={`leaderboard-skeleton-${i}`} className="h-20 w-full" />
+              <Skeleton
+                key={`leaderboard-skeleton-${i}`}
+                className="h-20 w-full"
+              />
             ))}
           </div>
         </div>
@@ -146,7 +167,9 @@ const LeaderboardPage: React.FC = () => {
 
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             See how you rank against other{' '}
-            <span className="text-quest-gold font-semibold">quest warriors</span>{' '}
+            <span className="text-quest-gold font-semibold">
+              quest warriors
+            </span>{' '}
             and compete for the top spot
           </p>
 
@@ -176,7 +199,9 @@ const LeaderboardPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="glass border-neon-blue/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Users
+                </CardTitle>
                 <Users className="h-4 w-4 text-neon-blue" />
               </CardHeader>
               <CardContent>
@@ -188,7 +213,9 @@ const LeaderboardPage: React.FC = () => {
 
             <Card className="glass border-neon-purple/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Rewards</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Rewards
+                </CardTitle>
                 <Coins className="h-4 w-4 text-quest-gold" />
               </CardHeader>
               <CardContent>
@@ -200,7 +227,9 @@ const LeaderboardPage: React.FC = () => {
 
             <Card className="glass border-neon-green/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Average Balance</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Average Balance
+                </CardTitle>
                 <TrendingUp className="h-4 w-4 text-neon-green" />
               </CardHeader>
               <CardContent>
@@ -238,7 +267,8 @@ const LeaderboardPage: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-quest-gold">
-                    {LeaderboardService.formatBalance(userPosition.balance)} USDT
+                    {LeaderboardService.formatBalance(userPosition.balance)}{' '}
+                    USDT
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Total Earned
@@ -261,7 +291,9 @@ const LeaderboardPage: React.FC = () => {
         {leaderboard && leaderboard.entries.length === 0 ? (
           <div className="text-center py-12">
             <Trophy className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Rankings Available</h3>
+            <h3 className="text-xl font-semibold mb-2">
+              No Rankings Available
+            </h3>
             <p className="text-muted-foreground">
               Complete quests to appear on the leaderboard!
             </p>
@@ -272,7 +304,8 @@ const LeaderboardPage: React.FC = () => {
               <h2 className="text-2xl font-bold">Top 25 Quest Warriors</h2>
               {leaderboard && (
                 <div className="text-sm text-muted-foreground">
-                  Last updated: {new Date(leaderboard.lastCalculated).toLocaleString()}
+                  Last updated:{' '}
+                  {new Date(leaderboard.lastCalculated).toLocaleString()}
                 </div>
               )}
             </div>
@@ -303,10 +336,12 @@ const LeaderboardPage: React.FC = () => {
                       {/* User Info */}
                       <div>
                         <div className="font-mono text-sm text-muted-foreground">
-                          {entry.walletAddress.slice(0, 6)}...{entry.walletAddress.slice(-4)}
+                          {entry.walletAddress.slice(0, 6)}...
+                          {entry.walletAddress.slice(-4)}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Last updated: {new Date(entry.lastUpdated).toLocaleDateString()}
+                          Last updated:{' '}
+                          {new Date(entry.lastUpdated).toLocaleDateString()}
                         </div>
                       </div>
                     </div>

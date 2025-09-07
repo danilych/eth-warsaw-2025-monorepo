@@ -1,7 +1,6 @@
 // biome-ignore lint/style/useImportType: <explanation>
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
 import { QuestService } from '../services/quest.service';
 import type { QuestWithUserStatus, QuestStatus } from '../types/api';
 import { Button } from '../components/ui/button';
@@ -21,9 +20,10 @@ import {
 import { Badge } from '../components/ui/badge';
 import { Skeleton } from '../components/ui/skeleton';
 import { Trophy, Play, CheckCircle, Clock, Coins } from 'lucide-react';
+import { useUser } from '@civic/auth-web3/react';
 
 const QuestsPage: React.FC = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isAuthenticated } = useUser();
   const navigate = useNavigate();
   const [quests, setQuests] = useState<QuestWithUserStatus[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,15 +31,14 @@ const QuestsPage: React.FC = () => {
   const [startingQuest, setStartingQuest] = useState<string | null>(null);
 
   // Redirect to auth if not logged in
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     console.log('user', user);
     console.log('isLoading', isLoading);
-    if (!user && !isLoading) {
+    if (!isLoading && (!user || !isAuthenticated)) {
       navigate('/auth');
       return;
     }
-  }, [user, isLoading]);
+  }, [user, isAuthenticated, isLoading, navigate]);
 
   // Fetch quests
   useEffect(() => {
@@ -297,6 +296,7 @@ const QuestsPage: React.FC = () => {
                       </div>
 
                       {/* Action Button */}
+                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
                       <div
                         className="flex-shrink-0"
                         onClick={(e) => e.stopPropagation()}
