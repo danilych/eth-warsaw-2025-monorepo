@@ -10,7 +10,7 @@ export namespace SignatureService {
   const DOMAIN: TypedDataDomain = {
     name: 'Claimer',
     version: '1',
-    chainId: 42161,
+    chainId: 421614,
     verifyingContract: '0xbE8D5D3Bed95d727A31522dC36f3AB3fD2CE7c2f',
   };
 
