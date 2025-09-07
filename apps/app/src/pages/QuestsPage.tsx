@@ -580,7 +580,7 @@ const QuestsPage: React.FC = () => {
               >
                 <Card className="glass border-neon-blue/20 hover:border-neon-blue/40 transition-all duration-300 pr-2">
                   <AccordionTrigger className="hover:no-underline p-0">
-                    <CardHeader className="flex-row items-center space-y-0 space-x-4 w-full">
+                    <CardHeader className="flex-row items-center space-y-0 space-x-4 w-full flex-col md:flex-row gap-4 md:gap-0">
                       {/* Quest Image */}
                       <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-neon-blue/20 to-neon-purple/20 flex items-center justify-center flex-shrink-0">
                         {quest.imageUrl ? (
