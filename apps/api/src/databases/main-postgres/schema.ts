@@ -6,7 +6,6 @@ import {
   pgTable,
   bigint,
   text,
-  index,
   integer,
   numeric,
 } from 'drizzle-orm/pg-core';
@@ -80,15 +79,11 @@ export const blockchainNetworkEnum = pgEnumTyped(
 );
 
 // Blockchain parser state table - tracks the last processed block for each network
-export const blockchainParserState = pgTable(
-  'blockchain_parser_state',
-  {
-    ...commonColumns,
-    network: blockchainNetworkEnum().notNull().unique(),
-    lastProcessedBlock: bigint({ mode: 'number' }).notNull().default(0),
-  },
-  (table) => [index('blockchain_parser_state_network_idx').on(table.network)]
-);
+export const blockchainParserState = pgTable('blockchain_parser_state', {
+  ...commonColumns,
+  network: blockchainNetworkEnum().notNull(),
+  lastProcessedBlock: bigint({ mode: 'number' }).notNull().default(0),
+});
 
 export const userBalances = pgTable('user_balances', {
   ...commonColumns,

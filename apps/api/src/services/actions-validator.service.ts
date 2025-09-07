@@ -24,10 +24,13 @@ export namespace ActionsValidatorService {
   };
 
   export const saveLastProcessedBlockNumber = async (blockNumber: number) => {
-    await db.insert(blockchainParserState).values({
-      network: ENetworks.ZETACHAIN,
-      lastProcessedBlock: blockNumber,
-    });
+    await db
+      .insert(blockchainParserState)
+      .values({
+        network: ENetworks.ZETACHAIN,
+        lastProcessedBlock: blockNumber,
+      })
+      .onConflictDoNothing();
   };
 
   export const getTargetContractAddresses = async () => {
