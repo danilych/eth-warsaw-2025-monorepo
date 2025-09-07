@@ -10,6 +10,7 @@ export enum QuestStatus {
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   CLAIM = 'CLAIM',
+  CLAIMED = 'CLAIMED',
 }
 
 export interface Quest {

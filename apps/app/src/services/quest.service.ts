@@ -76,6 +76,49 @@ export const QuestService = {
   },
 
   /**
+   * Start quest (change status to IN_PROGRESS)
+   */
+  async startQuest(
+    questId: string,
+    userId: string,
+    accessToken: string
+  ): Promise<void> {
+    const response = await apiClient.put(
+      `/quests/${questId}/change-status`,
+      { userId },
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+
+    if (!response.success) {
+      throw new Error('Failed to start quest');
+    }
+  },
+
+  /**
+   * Get quest status for user
+   */
+  async getQuestStatus(
+    questId: string,
+    userId: string,
+    accessToken: string
+  ): Promise<string> {
+    const response = await apiClient.get<{ status: string }>(
+      `/quests/${questId}/status/${userId}`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error('Failed to get quest status');
+    }
+
+    return response.data.status;
+  },
+
+  /**
    * Claim quest reward
    */
   async claimQuest(
@@ -84,6 +127,7 @@ export const QuestService = {
   ): Promise<ClaimQuestResponse> {
     const response = await apiClient.post<ClaimQuestResponse>(
       `/quests/${questId}/claim`,
+      undefined,
       {
         headers: { Authorization: `Bearer ${accessToken}` },
       }

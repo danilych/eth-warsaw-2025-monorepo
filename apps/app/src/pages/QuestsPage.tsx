@@ -26,18 +26,21 @@ const QuestsPage: React.FC = () => {
   const { user, isLoading, isAuthenticated, accessToken } = useUser();
   const navigate = useNavigate();
   const [quests, setQuests] = useState<QuestWithUserStatus[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [startingQuest, setStartingQuest] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pollingIntervals, setPollingIntervals] = useState<
+    Map<string, NodeJS.Timeout>
+  >(new Map());
+  const [loading, setLoading] = useState(true);
 
   // Redirect to auth if not logged in
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  //   useEffect(() => {
-  //     if (!user && !isLoading) {
-  //       navigate('/auth');
-  //       return;
-  //     }
-  //   }, [user, isLoading]);
+  useEffect(() => {
+    if (!user && !isLoading) {
+      navigate('/auth');
+      return;
+    }
+  }, [user, isLoading]);
 
   // Fetch quests
   useEffect(() => {
@@ -63,11 +66,13 @@ const QuestsPage: React.FC = () => {
   }, [user, accessToken]);
 
   const handleStartQuest = async (questId: string) => {
+    if (!user || !accessToken) return;
+
     try {
       setStartingQuest(questId);
-      // Note: startQuest method not available in current service
-      // This would need to be implemented in the backend
-      console.log('Starting quest:', questId);
+
+      // Start the quest
+      await QuestService.startQuest(questId, user.id, accessToken);
 
       // Update local state
       setQuests((prev) =>
@@ -77,7 +82,7 @@ const QuestsPage: React.FC = () => {
                 ...quest,
                 userStatus: {
                   id: `temp-${questId}`,
-                  userId: user?.id || '',
+                  userId: user.id,
                   status: 'IN_PROGRESS' as QuestStatus,
                   createdAt: new Date().toISOString(),
                   updatedAt: null,
@@ -86,13 +91,108 @@ const QuestsPage: React.FC = () => {
             : quest
         )
       );
+
+      // Start polling for quest status
+      startQuestStatusPolling(questId);
     } catch (err) {
-      console.error('Error starting quest:', err);
       setError('Failed to start quest. Please try again.');
+      console.error('Error starting quest:', err);
     } finally {
       setStartingQuest(null);
     }
   };
+
+  const startQuestStatusPolling = (questId: string) => {
+    if (!user || !accessToken) return;
+
+    // Clear existing interval if any
+    const existingInterval = pollingIntervals.get(questId);
+    if (existingInterval) {
+      clearInterval(existingInterval);
+    }
+
+    // Start new polling interval
+    const interval = setInterval(async () => {
+      try {
+        const status = await QuestService.getQuestStatus(
+          questId,
+          user.id,
+          accessToken
+        );
+
+        if (status === 'COMPLETED') {
+          // Clear interval and update quest status
+          clearInterval(interval);
+          setPollingIntervals((prev) => {
+            const newMap = new Map(prev);
+            newMap.delete(questId);
+            return newMap;
+          });
+
+          // Update quest status to completed
+          setQuests((prev) =>
+            prev.map((quest) =>
+              quest.id === questId && quest.userStatus
+                ? {
+                    ...quest,
+                    userStatus: {
+                      ...quest.userStatus,
+                      status: 'COMPLETED' as QuestStatus,
+                      updatedAt: new Date().toISOString(),
+                    },
+                  }
+                : quest
+            )
+          );
+        }
+      } catch (err) {
+        console.error('Error polling quest status:', err);
+      }
+    }, 5000); // Poll every 5 seconds
+
+    // Store interval reference
+    setPollingIntervals((prev) => new Map(prev).set(questId, interval));
+  };
+
+  const handleClaimQuest = async (questId: string) => {
+    if (!accessToken) return;
+
+    try {
+      setStartingQuest(questId);
+      await QuestService.claimQuest(questId, accessToken);
+
+      // Update quest status to claimed or remove from list
+      setQuests((prev) =>
+        prev.map((quest) =>
+          quest.id === questId && quest.userStatus
+            ? {
+                ...quest,
+                userStatus: {
+                  ...quest.userStatus,
+                  status: 'CLAIMED' as QuestStatus,
+                  updatedAt: new Date().toISOString(),
+                },
+              }
+            : quest
+        )
+      );
+    } catch (err) {
+      setError('Failed to claim quest. Please try again.');
+      console.error('Error claiming quest:', err);
+    } finally {
+      setStartingQuest(null);
+    }
+  };
+
+  // Cleanup intervals on unmount
+  // biome-ignore lint/correctness/useExhaustiveDependencies: cleanup effect
+  useEffect(() => {
+    return () => {
+      for (const interval of pollingIntervals.values()) {
+        clearInterval(interval);
+      }
+    };
+  }, []);
 
   const getStatusBadge = (status: QuestStatus | null) => {
     if (!status) {
@@ -172,19 +272,29 @@ const QuestsPage: React.FC = () => {
       case 'COMPLETED':
         return (
           <Button
+            onClick={() => handleClaimQuest(quest.id)}
+            disabled={startingQuest === quest.id}
+            className="bg-gradient-to-r from-quest-gold to-neon-cyan hover:from-quest-gold/80 hover:to-neon-cyan/80 text-black border-0"
+          >
+            {startingQuest === quest.id ? (
+              <>Loading...</>
+            ) : (
+              <>
+                <Trophy className="w-4 h-4 mr-2" />
+                Claim Reward
+              </>
+            )}
+          </Button>
+        );
+      case 'CLAIMED':
+        return (
+          <Button
             variant="outline"
             disabled
             className="border-neon-green/30 text-neon-green"
           >
             <CheckCircle className="w-4 h-4 mr-2" />
-            Completed
-          </Button>
-        );
-      case 'CLAIM':
-        return (
-          <Button className="bg-gradient-to-r from-quest-gold to-neon-cyan hover:from-quest-gold/80 hover:to-neon-cyan/80 text-black border-0">
-            <Trophy className="w-4 h-4 mr-2" />
-            Claim Reward
+            Claimed
           </Button>
         );
       default:
