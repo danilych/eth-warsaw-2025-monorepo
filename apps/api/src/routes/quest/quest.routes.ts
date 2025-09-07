@@ -19,6 +19,7 @@ import { QuestService } from '../../services/blockchain/quest.service';
 import { SignatureService } from '../../services/blockchain/signature.service';
 import { authMiddleware } from '../../middlewares/auth.middleware';
 import type { Env } from '../../env';
+import { EQuestStatuses } from 'lib/enums/quests';
 
 const openApiTags = ['Quest'];
 export const questRouter = new OpenAPIHono<Env>();
@@ -546,6 +547,125 @@ questRouter.openapi(
     } catch (error) {
       console.error('Error claiming quest:', error);
       return c.json({ success: false, message: 'Failed to claim quest' }, 500);
+    }
+  }
+);
+
+questRouter.openapi(
+  withSerializer(
+    createRoute({
+      method: 'put',
+      path: '/{questId}/change-status',
+      tags: openApiTags,
+      request: {
+        params: z.object({
+          questId: z.string().uuid('Invalid quest ID format'),
+          userId: z.string().uuid('Invalid user ID format'),
+        }),
+      },
+      responses: {
+        200: openapiSuccessResponse({
+          schema: QuestWithUserStatusSchema,
+        }),
+        404: {
+          description: 'User quest not found',
+          content: {
+            'application/json': {
+              schema: z.object({
+                success: z.boolean(),
+                message: z.string(),
+              }),
+            },
+          },
+        },
+      },
+    })
+  ),
+  async (c) => {
+    const { questId, userId } = c.req.valid('param');
+
+    try {
+      await db
+        .update(userQuests)
+        .set({ status: EQuestStatuses.IN_PROGRESS })
+        .where(
+          and(eq(userQuests.questId, questId), eq(userQuests.userId, userId))
+        );
+
+      return c.json({
+        success: true,
+        data: {
+          status: EQuestStatuses.IN_PROGRESS,
+        },
+      });
+    } catch (error) {
+      console.error('Error changing quest status:', error);
+      return c.json(
+        { success: false, message: 'Failed to change quest status' },
+        500
+      );
+    }
+  }
+);
+
+questRouter.openapi(
+  withSerializer(
+    createRoute({
+      method: 'get',
+      path: '/{questId}/status/{userId}',
+      tags: openApiTags,
+      request: {
+        params: z.object({
+          questId: z.string().uuid('Invalid quest ID format'),
+          userId: z.string().uuid('Invalid user ID format'),
+        }),
+      },
+      responses: {
+        200: openapiSuccessResponse({
+          schema: QuestWithUserStatusSchema,
+        }),
+        404: {
+          description: 'User quest not found',
+          content: {
+            'application/json': {
+              schema: z.object({
+                success: z.boolean(),
+                message: z.string(),
+              }),
+            },
+          },
+        },
+      },
+    })
+  ),
+  async (c) => {
+    const { questId, userId } = c.req.valid('param');
+
+    try {
+      const [userQuest] = await db
+        .select()
+        .from(userQuests)
+        .where(
+          and(eq(userQuests.questId, questId), eq(userQuests.userId, userId))
+        )
+        .limit(1);
+
+      if (!userQuest) {
+        throw new NotFoundException('User quest not found');
+      }
+
+      return c.json({
+        success: true,
+        data: {
+          status: userQuest.status,
+        },
+      });
+    } catch (error) {
+      console.error('Error getting quest status:', error);
+      return c.json(
+        { success: false, message: 'Failed to get quest status' },
+        500
+      );
     }
   }
 );
