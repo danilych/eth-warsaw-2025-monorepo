@@ -579,7 +579,7 @@ const QuestsPage: React.FC = () => {
                 value={quest.id}
                 className="border-0"
               >
-                <Card className="glass border-neon-blue/20 hover:border-neon-blue/40 transition-all duration-300">
+                <Card className="glass border-neon-blue/20 hover:border-neon-blue/40 transition-all duration-300 pr-2">
                   <AccordionTrigger className="hover:no-underline p-0">
                     <CardHeader className="flex-row items-center space-y-0 space-x-4 w-full">
                       {/* Quest Image */}
