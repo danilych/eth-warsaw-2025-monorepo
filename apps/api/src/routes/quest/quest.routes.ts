@@ -565,8 +565,7 @@ questRouter.openapi(
       responses: {
         200: openapiSuccessResponse({
           schema: z.object({
-            success: z.boolean(),
-            message: z.nativeEnum(EQuestStatuses),
+            status: z.nativeEnum(EQuestStatuses),
           }),
         }),
         404: {
