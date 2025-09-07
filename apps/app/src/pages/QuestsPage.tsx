@@ -117,17 +117,8 @@ const QuestsPage: React.FC = () => {
           accessToken,
         });
         setBackendUser(newUser);
-        toast({
-          title: 'Welcome!',
-          description: 'Your account has been created successfully.',
-        });
       } catch (err) {
         console.error('Error creating user:', err);
-        toast({
-          title: 'Error',
-          description: 'Failed to create account. Please try again.',
-          variant: 'destructive',
-        });
       } finally {
         setIsCreatingUser(false);
       }
