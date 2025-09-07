@@ -4,6 +4,16 @@ import type {
   QuestWithUserStatus,
   ClaimQuestResponse,
 } from '../types/api';
+import { arbitrumSepolia } from 'viem/chains';
+import { CLAIMER_ABI } from '../assets/claimer-abi';
+import { createPublicClient, createWalletClient, custom, http } from 'viem';
+
+// Extend Window interface for ethereum
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
 
 export const QuestService = {
   /**
@@ -49,6 +59,31 @@ export const QuestService = {
     if (!response.success || !response.data) {
       throw new Error('Failed to fetch user quests');
     }
+
+    // Create public client for reading from Claimer contract
+    const publicClient = createPublicClient({
+      chain: arbitrumSepolia,
+      transport: http(),
+    });
+
+    const claimerContractAddress = '0xbE8D5D3Bed95d727A31522dC36f3AB3fD2CE7c2f';
+
+    for (const quest of response.data) {
+      try {
+        const predictedReward = await publicClient.readContract({
+          address: claimerContractAddress,
+          abi: CLAIMER_ABI,
+          functionName: 'predictRewards',
+          args: [quest.id],
+        }) as bigint;
+
+        quest.reward = Number(predictedReward);
+      } catch (error) {
+        console.error(`Failed to predict rewards for quest ${quest.id}:`, error);
+        quest.reward = 0;
+      }
+    }
+
 
     return response.data;
   },
@@ -135,6 +170,47 @@ export const QuestService = {
 
     if (!response.success || !response.data) {
       throw new Error('Failed to claim quest');
+    }
+
+    const signature = response.data.signature;
+
+    const walletClient = createWalletClient({
+      chain: arbitrumSepolia,
+      transport: custom(window.ethereum),
+    });
+
+    const [account] = await walletClient.getAddresses();
+    if (!account) {
+      throw new Error('No wallet account found');
+    }
+
+    const claimerContractAddress = '0xbE8D5D3Bed95d727A31522dC36f3AB3fD2CE7c2f';
+
+    try {
+      const hash = await walletClient.writeContract({
+        address: claimerContractAddress,
+        abi: CLAIMER_ABI,
+        functionName: 'claim',
+        args: [questId, signature],
+        account,
+      });
+
+      const publicClient = createPublicClient({
+        chain: arbitrumSepolia,
+        transport: http(),
+      });
+
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+
+      if (receipt.status === 'success') {
+        console.log('Quest claimed successfully:', hash);
+      } else {
+        throw new Error('Transaction failed');
+      }
+
+    } catch (contractError) {
+      console.error('Contract interaction failed:', contractError);
+      throw new Error('Failed to claim reward on blockchain');
     }
 
     return response.data;

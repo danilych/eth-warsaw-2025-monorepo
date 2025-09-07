@@ -28,81 +28,6 @@ questRouter.use('*', authMiddleware());
 questRouter.openapi(
   withSerializer(
     createRoute({
-      method: 'get',
-      path: '/',
-      tags: openApiTags,
-      responses: {
-        200: openapiSuccessResponse({
-          schema: z.array(QuestSchema),
-        }),
-      },
-    })
-  ),
-  async (c) => {
-    const allQuests = await db
-      .select()
-      .from(quests)
-      .where(isNull(quests.deletedAt));
-
-    return c.json({
-      success: true,
-      data: allQuests,
-    });
-  }
-);
-
-questRouter.openapi(
-  withSerializer(
-    createRoute({
-      method: 'get',
-      path: '/{id}',
-      tags: openApiTags,
-      request: {
-        params: z.object({
-          id: z.string().uuid('Invalid quest ID format'),
-        }),
-      },
-      responses: {
-        200: openapiSuccessResponse({
-          schema: QuestSchema,
-        }),
-        404: {
-          description: 'Quest not found',
-          content: {
-            'application/json': {
-              schema: z.object({
-                success: z.boolean(),
-                message: z.string(),
-              }),
-            },
-          },
-        },
-      },
-    })
-  ),
-  async (c) => {
-    const { id } = c.req.valid('param');
-
-    const [quest] = await db
-      .select()
-      .from(quests)
-      .where(and(eq(quests.id, id), isNull(quests.deletedAt)))
-      .limit(1);
-
-    if (!quest) {
-      throw new NotFoundException('Quest not found');
-    }
-
-    return c.json({
-      success: true,
-      data: quest,
-    });
-  }
-);
-
-questRouter.openapi(
-  withSerializer(
-    createRoute({
       method: 'post',
       path: '/',
       tags: openApiTags,
@@ -332,86 +257,9 @@ questRouter.openapi(
   withSerializer(
     createRoute({
       method: 'get',
-      path: '/{questId}/user-quests/{userId}',
-      tags: openApiTags,
-      request: {
-        params: z.object({
-          userId: z.string().uuid('Invalid user ID format'),
-          questId: z.string().uuid('Invalid quest ID format'),
-        }),
-      },
-      responses: {
-        200: openapiSuccessResponse({
-          schema: QuestWithUserStatusSchema,
-        }),
-        404: {
-          description: 'User quest not found',
-          content: {
-            'application/json': {
-              schema: z.object({
-                success: z.boolean(),
-                message: z.string(),
-              }),
-            },
-          },
-        },
-      },
-    })
-  ),
-  async (c) => {
-    const { userId, questId } = c.req.valid('param');
-
-    const result = await db
-      .select({
-        id: quests.id,
-        name: quests.name,
-        description: quests.description,
-        imageUrl: quests.imageUrl,
-        questType: quests.questType,
-        rewardAmount: quests.rewardAmount,
-        rewardTokenAddress: quests.rewardTokenAddress,
-        expiry: quests.expiry,
-        createdAt: quests.createdAt,
-        updatedAt: quests.updatedAt,
-        deletedAt: quests.deletedAt,
-        userStatus: {
-          id: userQuests.id,
-          userId: userQuests.userId,
-          status: userQuests.status,
-          createdAt: userQuests.createdAt,
-          updatedAt: userQuests.updatedAt,
-        },
-      })
-      .from(quests)
-      .leftJoin(
-        userQuests,
-        and(eq(quests.id, userQuests.questId), eq(userQuests.userId, userId))
-      )
-      .where(and(isNull(quests.deletedAt), eq(quests.id, questId)))
-      .limit(1);
-
-    if (!result) {
-      throw new NotFoundException('Quest not found');
-    }
-
-    return c.json({
-      success: true,
-      data: result,
-    });
-  }
-);
-
-questRouter.openapi(
-  withSerializer(
-    createRoute({
-      method: 'get',
       path: '/user-quests/{userId}',
       tags: openApiTags,
-      request: {
-        params: z.object({
-          userId: z.string().uuid('Invalid user ID format'),
-        }),
-      },
+      request: {},
       responses: {
         200: openapiSuccessResponse({
           schema: z.array(QuestWithUserStatusSchema),
@@ -420,7 +268,21 @@ questRouter.openapi(
     })
   ),
   async (c) => {
-    const { userId } = c.req.valid('param');
+    const baseUser = c.get('user');
+
+    if (!baseUser?.sub) {
+      return c.json({ success: false, message: 'User not found' }, 400);
+    }
+
+    const [user] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.civicId, baseUser.sub)))
+      .limit(1);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     const userQuestsWithQuests = await db
       .select({
@@ -446,7 +308,7 @@ questRouter.openapi(
       .from(quests)
       .leftJoin(
         userQuests,
-        and(eq(quests.id, userQuests.questId), eq(userQuests.userId, userId))
+        and(eq(quests.id, userQuests.questId), eq(userQuests.userId, user.id))
       )
       .where(isNull(quests.deletedAt));
 
@@ -603,11 +465,13 @@ questRouter.openapi(
 
     try {
       await db
-        .update(userQuests)
-        .set({ status: EQuestStatuses.IN_PROGRESS })
-        .where(
-          and(eq(userQuests.questId, questId), eq(userQuests.userId, user.id))
-        );
+        .insert(userQuests)
+        .values({
+          questId,
+          userId: user.id,
+          status: EQuestStatuses.IN_PROGRESS,
+        })
+        .returning();
 
       return c.json({
         success: true,
