@@ -156,7 +156,7 @@ questRouter.openapi(
 
       await QuestService.createQuest({
         id: newQuest.id,
-        reward: body.reward.toString(),
+        reward: body.rewardAmount.toString(),
         rewardToken: body.rewardTokenAddress,
         expiry: body.expiry,
         startsAt: Math.floor(Date.now() / 1000),
