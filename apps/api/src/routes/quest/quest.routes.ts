@@ -585,6 +585,8 @@ questRouter.openapi(
 
     const baseUser = c.get('user');
 
+    console.log(baseUser);
+
     if (!baseUser?.sub) {
       return c.json({ success: false, message: 'User not found' }, 400);
     }
