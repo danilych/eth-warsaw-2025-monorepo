@@ -78,6 +78,8 @@ export const QuestService = {
           args: [quest.id],
         }) as bigint;
 
+        console.log('Predicted reward for quest from contract', quest.id, 'is', predictedReward);
+
         quest.reward = Number(predictedReward);
 
         console.log('Predicted reward for quest', quest.id, 'is', quest.reward);
