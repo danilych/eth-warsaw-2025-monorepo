@@ -1,3 +1,4 @@
+// biome-ignore lint/style/useImportType: <explanation>
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -22,7 +23,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import { Trophy, Play, CheckCircle, Clock, Coins } from 'lucide-react';
 
 const QuestsPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const [quests, setQuests] = useState<QuestWithUserStatus[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,12 +31,13 @@ const QuestsPage: React.FC = () => {
   const [startingQuest, setStartingQuest] = useState<string | null>(null);
 
   // Redirect to auth if not logged in
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
-    if (!user) {
+    if (!user && !isLoading) {
       navigate('/auth');
       return;
     }
-  }, [user]);
+  }, [user, isLoading]);
 
   // Fetch quests
   useEffect(() => {
