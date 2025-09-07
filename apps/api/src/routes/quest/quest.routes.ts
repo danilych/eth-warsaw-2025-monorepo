@@ -564,7 +564,10 @@ questRouter.openapi(
       },
       responses: {
         200: openapiSuccessResponse({
-          schema: QuestWithUserStatusSchema,
+          schema: z.object({
+            success: z.boolean(),
+            message: z.nativeEnum(EQuestStatuses),
+          }),
         }),
         404: {
           description: 'User quest not found',
@@ -584,8 +587,6 @@ questRouter.openapi(
     const { questId } = c.req.valid('param');
 
     const baseUser = c.get('user');
-
-    console.log(baseUser);
 
     if (!baseUser?.sub) {
       return c.json({ success: false, message: 'User not found' }, 400);
@@ -638,7 +639,9 @@ questRouter.openapi(
       },
       responses: {
         200: openapiSuccessResponse({
-          schema: QuestWithUserStatusSchema,
+          schema: z.object({
+            status: z.nativeEnum(EQuestStatuses),
+          }),
         }),
         404: {
           description: 'User quest not found',
