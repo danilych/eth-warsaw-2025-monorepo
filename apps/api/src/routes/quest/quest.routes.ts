@@ -143,7 +143,7 @@ questRouter.openapi(
           description: body.description,
           imageUrl: body.imageUrl || null,
           questType: body.questType,
-          rewardAmount: body.reward,
+          rewardAmount: body.reward.toString(),
           rewardTokenAddress: body.rewardTokenAddress,
           expiry: body.expiry,
           fromAddress: body.fromAddress || null,
