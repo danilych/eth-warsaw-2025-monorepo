@@ -52,24 +52,6 @@ export const HeroSection = () => {
             </Button>
           </Link>
         </div>
-
-        {/* Stats */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-          <div className="glass p-6 rounded-xl text-center hover:border-neon-blue/50 transition-colors">
-            <div className="text-3xl font-bold text-neon-blue mb-2">$1.2M+</div>
-            <div className="text-muted-foreground">
-              Total Rewards Distributed
-            </div>
-          </div>
-          <div className="glass p-6 rounded-xl text-center hover:border-neon-purple/50 transition-colors">
-            <div className="text-3xl font-bold text-neon-purple mb-2">50K+</div>
-            <div className="text-muted-foreground">Quests Completed</div>
-          </div>
-          <div className="glass p-6 rounded-xl text-center hover:border-neon-cyan/50 transition-colors">
-            <div className="text-3xl font-bold text-neon-cyan mb-2">10K+</div>
-            <div className="text-muted-foreground">Active Questers</div>
-          </div>
-        </div>
       </div>
 
       {/* Scroll indicator */}
