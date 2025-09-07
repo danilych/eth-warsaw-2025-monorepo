@@ -26,9 +26,9 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <WagmiProvider config={config}>
-    <RainbowKitProvider>
-      <CivicAuthProvider clientId="49631f1e-af8d-4112-8b72-8c108575ccef">
-        <QueryClientProvider client={queryClient}>
+    <CivicAuthProvider clientId="49631f1e-af8d-4112-8b72-8c108575ccef">
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider>
           <TooltipProvider>
             <Toaster />
             <Sonner />
@@ -42,9 +42,9 @@ const App = () => (
               </Routes>
             </BrowserRouter>
           </TooltipProvider>
-        </QueryClientProvider>
-      </CivicAuthProvider>
-    </RainbowKitProvider>
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </CivicAuthProvider>
   </WagmiProvider>
 );
 
