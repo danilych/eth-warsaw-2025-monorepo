@@ -28,7 +28,7 @@ export const useAuth = () => {
     initAuth();
   }, []);
 
-  const signIn = useCallback(async () => {
+  const signIn = async () => {
     if (!authClient) return;
 
     try {
@@ -42,7 +42,7 @@ export const useAuth = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [authClient]);
+  };
 
   const signOut = useCallback(async () => {
     if (!authClient) return;
