@@ -11,15 +11,23 @@ export const AuthService = {
     }
   },
 
-  async createUser(
-    civicId: string,
-    walletAddress: string,
-    accessToken: string
-  ): Promise<User> {
+  async createUser({
+    civicId,
+    civicAddress,
+    walletAddress,
+    accessToken,
+  }: {
+    civicId: string;
+    civicAddress: string;
+    walletAddress: string;
+    accessToken: string;
+  }): Promise<User> {
     const response = await apiClient.post<User>(
       `/auth/auth/user?id=${encodeURIComponent(
         civicId
-      )}&walletAddress=${encodeURIComponent(walletAddress)}`,
+      )}&walletAddress=${encodeURIComponent(
+        walletAddress
+      )}&civicWalletAddress=${encodeURIComponent(civicAddress)}`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
 

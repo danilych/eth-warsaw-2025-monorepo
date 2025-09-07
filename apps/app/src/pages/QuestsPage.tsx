@@ -93,6 +93,7 @@ const QuestsPage: React.FC = () => {
   }, [user, accessToken]);
 
   // Handle wallet connection and user creation
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     const handleWalletConnection = async () => {
       if (
@@ -108,11 +109,12 @@ const QuestsPage: React.FC = () => {
 
       try {
         setIsCreatingUser(true);
-        const newUser = await AuthService.createUser(
-          user.id,
-          address,
-          accessToken
-        );
+        const newUser = await AuthService.createUser({
+          civicId: user.id,
+          civicAddress: address,
+          walletAddress: address,
+          accessToken,
+        });
         setBackendUser(newUser);
         toast({
           title: 'Welcome!',
@@ -131,14 +133,7 @@ const QuestsPage: React.FC = () => {
     };
 
     handleWalletConnection();
-  }, [
-    user,
-    address,
-    accessToken,
-    backendUser,
-    isCreatingUser,
-    isBackendUserLoading,
-  ]);
+  }, [address]);
 
   const handleStartQuest = async (questId: string) => {
     if (!user || !accessToken) return;
