@@ -1,4 +1,5 @@
 import {
+  ethers,
   JsonRpcProvider,
   Wallet,
   type TypedDataDomain,
@@ -11,12 +12,12 @@ export namespace SignatureService {
     name: 'Claimer',
     version: '1',
     chainId: 421614,
-    verifyingContract: '0xAd51FCfE8feEBDCd29CD8C91880D6AAe5051B19E',
+    verifyingContract: '0x2d02956B201889A00CFf7B20bDEff13E69EcF1f4',
   };
 
   const TYPES: Record<string, TypedDataField[]> = {
     ClaimRequest: [
-      { name: 'questId', type: 'string' },
+      { name: 'questId', type: 'bytes32' },
       { name: 'user', type: 'address' },
     ],
   };
@@ -38,7 +39,7 @@ export namespace SignatureService {
       const wallet = new Wallet(signingKey, provider);
 
       const message = {
-        questId: uuid,
+        questId: ethers.keccak256(ethers.toUtf8Bytes(uuid)),
         user: address,
       };
 

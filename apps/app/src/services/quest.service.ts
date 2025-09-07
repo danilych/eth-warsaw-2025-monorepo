@@ -66,7 +66,7 @@ export const QuestService = {
       transport: http(),
     });
 
-    const claimerContractAddress = '0xAd51FCfE8feEBDCd29CD8C91880D6AAe5051B19E';
+    const claimerContractAddress = '0x2d02956B201889A00CFf7B20bDEff13E69EcF1f4';
 
     for (const quest of response.data) {
       console.log('Processing quest', quest);
@@ -196,7 +196,7 @@ export const QuestService = {
       throw new Error('No wallet account found');
     }
 
-    const claimerContractAddress = '0xAd51FCfE8feEBDCd29CD8C91880D6AAe5051B19E';
+    const claimerContractAddress = '0x2d02956B201889A00CFf7B20bDEff13E69EcF1f4';
 
     try {
       const hash = await walletClient.writeContract({
