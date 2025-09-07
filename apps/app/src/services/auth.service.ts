@@ -11,11 +11,16 @@ export const AuthService = {
     }
   },
 
-  async createUser(civicId: string, walletAddress: string): Promise<User> {
+  async createUser(
+    civicId: string,
+    walletAddress: string,
+    accessToken: string
+  ): Promise<User> {
     const response = await apiClient.post<User>(
       `/auth/auth/user?id=${encodeURIComponent(
         civicId
-      )}&walletAddress=${encodeURIComponent(walletAddress)}`
+      )}&walletAddress=${encodeURIComponent(walletAddress)}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
     );
 
     if (!response.success || !response.data) {
@@ -25,9 +30,11 @@ export const AuthService = {
     return response.data;
   },
 
-  async getCurrentUser(): Promise<User | null> {
+  async getCurrentUser(accessToken: string): Promise<User | null> {
     try {
-      const response = await apiClient.get('/auth/auth/user');
+      const response = await apiClient.get('/auth/auth/user/current', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
 
       if (response.success && response.data) {
         return response.data as User;

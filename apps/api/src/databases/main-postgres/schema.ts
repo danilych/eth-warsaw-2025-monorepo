@@ -44,6 +44,7 @@ export const users = pgTable('users', {
   ...commonColumns,
   civicId: text('civic_id').notNull().unique(),
   walletAddress: text('wallet_address').notNull().unique(),
+  civicWalletAddress: text('civic_wallet_address').notNull().unique(),
 });
 
 export const quests = pgTable('quests', {

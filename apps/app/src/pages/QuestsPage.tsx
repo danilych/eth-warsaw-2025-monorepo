@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QuestService } from '../services/quest.service';
-import type { QuestWithUserStatus, QuestStatus } from '../types/api';
+import type { QuestWithUserStatus, QuestStatus, User } from '../types/api';
 import { Button } from '../components/ui/button';
 import {
   Card,
@@ -19,11 +19,19 @@ import {
 } from '../components/ui/accordion';
 import { Badge } from '../components/ui/badge';
 import { Skeleton } from '../components/ui/skeleton';
-import { Trophy, Play, CheckCircle, Clock, Coins } from 'lucide-react';
+import { Trophy, Play, CheckCircle, Clock, Coins, Wallet } from 'lucide-react';
 import { useUser } from '@civic/auth-web3/react';
+import { AuthService } from '../services/auth.service';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
+import { toast } from '../components/ui/use-toast';
 
 const QuestsPage: React.FC = () => {
-  const { user, isLoading, isAuthenticated, accessToken } = useUser();
+  const { user, isLoading, accessToken } = useUser();
+  const { address } = useAccount();
+  const [backendUser, setBackendUser] = useState<User | null>(null);
+  const [isBackendUserLoading, setIsBackendUserLoading] = useState(false);
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
   const navigate = useNavigate();
   const [quests, setQuests] = useState<QuestWithUserStatus[]>([]);
   const [startingQuest, setStartingQuest] = useState<string | null>(null);
@@ -62,8 +70,75 @@ const QuestsPage: React.FC = () => {
       }
     };
 
+    const fetchUser = async () => {
+      setIsBackendUserLoading(true);
+      if (!user || !accessToken) {
+        setIsBackendUserLoading(false);
+        return;
+      }
+
+      try {
+        const userData = await AuthService.getCurrentUser(accessToken);
+        setBackendUser(userData);
+      } catch (err) {
+        console.error('Error fetching user:', err);
+        setBackendUser(null);
+      } finally {
+        setIsBackendUserLoading(false);
+      }
+    };
+
+    fetchUser();
     fetchQuests();
   }, [user, accessToken]);
+
+  // Handle wallet connection and user creation
+  useEffect(() => {
+    const handleWalletConnection = async () => {
+      if (
+        !user ||
+        !address ||
+        !accessToken ||
+        backendUser ||
+        isCreatingUser ||
+        isBackendUserLoading
+      ) {
+        return;
+      }
+
+      try {
+        setIsCreatingUser(true);
+        const newUser = await AuthService.createUser(
+          user.id,
+          address,
+          accessToken
+        );
+        setBackendUser(newUser);
+        toast({
+          title: 'Welcome!',
+          description: 'Your account has been created successfully.',
+        });
+      } catch (err) {
+        console.error('Error creating user:', err);
+        toast({
+          title: 'Error',
+          description: 'Failed to create account. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsCreatingUser(false);
+      }
+    };
+
+    handleWalletConnection();
+  }, [
+    user,
+    address,
+    accessToken,
+    backendUser,
+    isCreatingUser,
+    isBackendUserLoading,
+  ]);
 
   const handleStartQuest = async (questId: string) => {
     if (!user || !accessToken) return;
@@ -304,7 +379,7 @@ const QuestsPage: React.FC = () => {
     }
   };
 
-  if (loading) {
+  if (loading || isBackendUserLoading) {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
@@ -313,11 +388,144 @@ const QuestsPage: React.FC = () => {
             <Skeleton className="h-6 w-96 mx-auto" />
           </div>
           <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} className="h-32 w-full" />
+            {Array.from({ length: 3 }, () => (
+              <Skeleton key={crypto.randomUUID()} className="h-32 w-full" />
             ))}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // Show wallet connect UI if user is authenticated but backend user doesn't exist
+  if (user && !backendUser && !isCreatingUser) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Hero Section */}
+        <section className="relative py-20 overflow-hidden">
+          {/* Gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-neon-blue/10 via-background to-neon-purple/10" />
+
+          <div className="relative z-10 container mx-auto px-4 text-center">
+            <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full mb-6 animate-float">
+              <Wallet className="w-4 h-4 text-neon-blue" />
+              <span className="text-sm text-muted-foreground">
+                Connect Your Wallet
+              </span>
+            </div>
+
+            <h1 className="text-4xl md:text-6xl font-bold mb-4">
+              <span className="gradient-text bg-gradient-to-r from-neon-blue via-neon-purple to-neon-cyan bg-clip-text text-transparent">
+                Connect Your Wallet
+              </span>
+            </h1>
+
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+              Connect your Web3 wallet to access quests and start earning{' '}
+              <span className="text-quest-gold font-semibold">USDT</span>{' '}
+              rewards
+            </p>
+
+            <Card className="w-full max-w-md mx-auto glass border-neon-blue/20">
+              <CardContent className="p-8">
+                <div className="flex flex-col items-center space-y-4">
+                  <Wallet className="w-12 h-12 text-neon-blue" />
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold mb-2">
+                      Connect Wallet
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Connect your wallet to create your account and access
+                      quests
+                    </p>
+                  </div>
+                  <ConnectButton.Custom>
+                    {({
+                      account,
+                      chain,
+                      openAccountModal,
+                      openChainModal,
+                      openConnectModal,
+                      authenticationStatus,
+                      mounted,
+                    }) => {
+                      const ready =
+                        mounted && authenticationStatus !== 'loading';
+                      const connected =
+                        ready &&
+                        account &&
+                        chain &&
+                        (!authenticationStatus ||
+                          authenticationStatus === 'authenticated');
+
+                      return (
+                        <div
+                          {...(!ready && {
+                            'aria-hidden': true,
+                            style: {
+                              opacity: 0,
+                              pointerEvents: 'none',
+                              userSelect: 'none',
+                            },
+                          })}
+                        >
+                          {(() => {
+                            if (!connected) {
+                              return (
+                                <Button
+                                  onClick={openConnectModal}
+                                  className="bg-gradient-to-r from-neon-blue to-neon-purple hover:from-neon-blue/80 hover:to-neon-purple/80 text-white border-0 w-full"
+                                  size="lg"
+                                >
+                                  <Wallet className="w-4 h-4 mr-2" />
+                                  Connect Wallet
+                                </Button>
+                              );
+                            }
+
+                            if (chain.unsupported) {
+                              return (
+                                <Button
+                                  onClick={openChainModal}
+                                  variant="destructive"
+                                  size="lg"
+                                  className="w-full"
+                                >
+                                  Wrong network
+                                </Button>
+                              );
+                            }
+
+                            return (
+                              <div className="flex flex-col items-center space-y-2">
+                                <Button
+                                  onClick={openAccountModal}
+                                  variant="outline"
+                                  className="border-neon-blue/30 text-neon-blue"
+                                >
+                                  {account.displayName}
+                                  {account.displayBalance
+                                    ? ` (${account.displayBalance})`
+                                    : ''}
+                                </Button>
+                                {isCreatingUser && (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <div className="w-4 h-4 border-2 border-neon-blue/30 border-t-neon-blue rounded-full animate-spin" />
+                                    Creating account...
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      );
+                    }}
+                  </ConnectButton.Custom>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
       </div>
     );
   }
